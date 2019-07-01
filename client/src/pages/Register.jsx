@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-no-duplicate-props */
 import React from 'react';
 
 import {
@@ -34,6 +35,7 @@ class RegisterPage extends React.Component {
         //binding the class fuctions to the state property
         this.handleTogglePasswordView = this.handleTogglePasswordView.bind(this);
         this.validateFieldNotTaken = this.validateFieldNotTaken.bind(this);
+        this.validatePasswordPattern= this.validatePasswordPattern.bind(this);
         this.submitAction = this.submitAction.bind(this);
         this.authenticate = this.authenticate.bind(this);
         this.state = {
@@ -75,10 +77,14 @@ class RegisterPage extends React.Component {
                 }
             }
         } else {
-            this.setState({ [e.target.name + "Valid"]: false, [e.target.name + "Message"]: "Incorrect Email format." });
+            if (e.target.name === 'email') this.setState({ emailValid: false, emailMessage: `Incorrect e-mail pattern`});
+        else if (e.target.name === 'username') this.setState({ usernameValid: false, usernameMessage: `Must be 2-15 characters long and contain letters and numbers only.`});
+
         }
     }
-
+    validatePasswordPattern(e){
+        this.setState({passwordValid:!e.target.validity.valid})
+    }
     async submitAction(e) {
         e.preventDefault();
         let data = new FormData(e.target);
@@ -147,13 +153,34 @@ class RegisterPage extends React.Component {
                             <TextInput variant="outlined" type="text" name="lastName" label="Last Name" />
                         </Grid>
                         <Grid item xs={12}>
-                            <TextInput onChange={this.validateFieldNotTaken} variant="outlined" type="email" name="email" label="Email" error={!this.state.emailValid} helperText={this.state.emailMessage} required />
+                            <TextInput 
+                                variant="outlined" type="email" name="email" label="Email" required
+                                onChange={this.validateFieldNotTaken} 
+                                error={!this.state.emailValid}
+                                helperText={this.state.emailMessage}  />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <TextInput onChange={this.validateFieldNotTaken} variant="outlined" type="text" name="username" label="Username" error={!this.state.usernameValid} helperText={this.state.usernameMessage} required />
+                            <TextInput 
+                                variant="outlined" type="text" name="username" label="Username" required
+                                onChange={this.validateFieldNotTaken}
+                                error={!this.state.usernameValid}
+                                inputProps={{pattern:"^[A-Za-z0-9_]{2,15}$"}}
+                                helperText={this.state.usernameMessage}
+                            />
                         </Grid>
                         <Grid item xs={12} sm={6}>
-                            <TextInput variant="outlined" type={this.state.passwordPeekState ? "text" : "password"} name="password" label="Password" required InputProps={{ endAdornment: <InputAdornment position="end"><IconButton onClick={this.handleTogglePasswordView}>{this.state.passwordPeekState ? <Visibility /> : <VisibilityOff />}</IconButton></InputAdornment> }} />
+                            <TextInput 
+                                variant="outlined" name="password" label="Password" required 
+                                onChange={this.validatePasswordPattern}
+                                error={this.state.passwordValid}
+                                type={this.state.passwordPeekState ? "text" : "password"} 
+                                inputProps={{pattern:"^([a-zA-Z0-9!@#$%^&*]{8,15})$"}}
+                                InputProps={{ endAdornment:
+                                    <InputAdornment position="end">
+                                        <IconButton onClick={this.handleTogglePasswordView}>{this.state.passwordPeekState ? <Visibility /> : <VisibilityOff />}</IconButton>
+                                    </InputAdornment> }}
+                                helperText="Must be 8-15 characters long and contain letters, numbers or symbols."
+                            />
                         </Grid>
                         <Grid item xs={12}>
                             <Button color="primary" variant="outlined" style={{ margin: "0.5em" }} type="submit">Register</Button>
