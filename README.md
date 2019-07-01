@@ -10,7 +10,7 @@ This is a fullstack app that lays on Express.js with mongoose and passport.js wi
 It's front is React.js with a beautiful Material design system for responsiveness and scalability.
 
 ### Want to try?
-For size and convinience this repo excludes node_modules, so on first run make sure to install dependencies.
+For size and convenience this repo excludes node_modules, so on first run make sure to install dependencies.
 To start the server download the repository, then you'll find 2 parent directories.
 
 ##### Starting the server
