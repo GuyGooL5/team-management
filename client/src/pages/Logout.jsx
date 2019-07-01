@@ -6,8 +6,7 @@ import {
     DialogTitle,
     DialogContent,
     DialogContentText,
-    DialogActions,
-    Snackbar
+    DialogActions
 } from "@material-ui/core";
 //text input with custom css features
 class LogoutPage extends React.Component {
@@ -20,7 +19,7 @@ class LogoutPage extends React.Component {
     }
     //handles password peek visibility
 
-    componentWillMount() {
+    componentDidMount() {
         this.performLogout();
     }
     async performLogout() {
@@ -28,24 +27,7 @@ class LogoutPage extends React.Component {
         if (request.status == 200) {
             let json = await request.json();
             //When the authentication is complete a dialog will appear that will notify redirecting message.
-            if (json.success && !document.cookie.indexOf('token')) {
-                let successDialog =
-                    <Dialog open>
-                        <DialogTitle>Succesfully logged out</DialogTitle>
-                        <DialogContent>
-                            <DialogContentText >
-                                Redirecting to main page...
-                        </DialogContentText>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => { window.location.replace("/") }} color="primary">Redirect</Button>
-                        </DialogActions>
-                    </Dialog>;
-                this.setState({ dialogMessage: successDialog });
-                setTimeout(() => {
-                    window.location.replace("/");
-                }, 3000);
-            } else {
+            if (!json.success && document.cookie.indexOf('token')) {
                 let failDialog =
                     <Dialog open>
                         <DialogTitle>A problem occoured</DialogTitle>
@@ -60,7 +42,6 @@ class LogoutPage extends React.Component {
                     </Dialog>;
                 this.setState({ dialogMessage: failDialog });
             }
-
         } else {
             window.location.href = "/";
         }
