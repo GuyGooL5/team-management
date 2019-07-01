@@ -1,0 +1,26 @@
+{
+  "name": "meanauthapp",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app"
+  },
+  "author": "Guy Tsitsiashvili",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "*",
+    "body-parser": "*",
+    "cookie-parser": "^1.4.4",
+    "cors": "*",
+    "dotenv": "^8.0.0",
+    "express": "*",
+    "express-session": "^1.16.1",
+    "jsonwebtoken": "*",
+    "method-override": "^3.0.0",
+    "mongoose": "*",
+    "morgan": "^1.9.1",
+    "passport": "^0.4.0",
+    "passport-jwt": "*"
+  }
+}
