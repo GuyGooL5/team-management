@@ -25,7 +25,7 @@ module.exports = (req, res) => {
     let newUser = new User(bodyObj);
 
     //use custom method from user model class to create a user and return a success message
-    User.addUser(newUser, (err, user) => {
+    User.createUser(newUser, (err, user) => {
         if (err) res.send({
             success: false,
             msg: 'Failed to register user'

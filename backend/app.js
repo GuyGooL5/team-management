@@ -86,6 +86,8 @@ mongoose.connection.on('error', (err) => {
 //Routes
 const users = require('./routes/users');
 app.use('/users', users);
+const teams = require('./routes/teams');
+app.use('/teams', teams);
 
 
 //Manage React stuff
