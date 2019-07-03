@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
     Container,
@@ -28,31 +28,67 @@ const TextInput = styled(TextField)({
     width: "100%"
 });
 
-class LoginPage extends React.Component {
-    constructor(props) {
-        super(props);
-        //binding the class fuctions to the state property
-        this.handleTogglePasswordView = this.handleTogglePasswordView.bind(this);
-        this.closeSnackbar=this.closeSnackbar.bind(this);
-        this.submitAction = this.submitAction.bind(this);
-        this.state = {
-            passwordPeekState: false,
-            dialogMessage: null
-        }
+
+function PasswordField() {
+    const [peek, setPeek] = useState(false);
+    function handleClick(e){
+        setPeek(!peek);
     }
-    //handles password peek visibility
-    handleTogglePasswordView() {
-        this.setState({ passwordPeekState: !this.state.passwordPeekState });
-    }
-    closeSnackbar(state){
-        this.setState({snackBarOpen:false});
-    }
-    async submitAction(e) {
+    return (
+        <TextInput
+            variant="outlined"
+            type={peek ? "text" : "password"}
+            name="password" label="Password" required
+            InputProps={
+                {
+                    endAdornment:
+                        <InputAdornment position="end">
+                            <IconButton onClick={handleClick}>{peek ? <Visibility /> : <VisibilityOff />}
+                            </IconButton>
+                        </InputAdornment>
+                }} />
+    )
+}
+function ErrorSnackbar(props) {
+    return (
+        <Snackbar
+            anchorOrigin={{
+                vertical: 'bottom',
+                horizontal: 'center',
+            }}
+            open={props.open}
+            autoHideDuration={3000}
+            message={<span>{props.message}</span>} />
+
+    )
+}
+
+function SuccessDialog(props){
+    return (
+        <Dialog {...props}>
+            <DialogTitle>Succesfully logged in</DialogTitle>
+            <DialogContent>
+                <DialogContentText >
+                    Redirecting to main page...
+            </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={() => { window.location.replace("/") }} color="primary">Redirect</Button>
+            </DialogActions>
+        </Dialog>
+)
+}
+
+function LoginPage(props) {
+    const [dialogState, setDialogState] = useState(false);
+    const [snackbarStatus, setSnackbarStatus] = useState(false)
+    const [snackbarMessage, setSnackbarMessage] = useState('')
+    const submitAction= async (e)=>{
         e.preventDefault();
         let data = new FormData(e.target);
-        let requestBody = {}
+        let body = {}
         for (let [field, value] of data.entries()) {
-            requestBody[field] = value;
+            body[field] = value;
         }
         let response = await fetch('users/auth', {
             method: 'POST',
@@ -60,63 +96,51 @@ class LoginPage extends React.Component {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ username: requestBody.username, password: requestBody.password })
+            body: JSON.stringify({ username: body.username, password: body.password })
         });
         let json = await response.json();
         //When the authentication is complete a dialog will appear that will notify redirecting message.
         if (json.success) {
-            let successDialog =
-                <Dialog open>
-                    <DialogTitle>Succesfully logged in</DialogTitle>
-                    <DialogContent>
-                        <DialogContentText >
-                            Redirecting to main page...
-                        </DialogContentText>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => { window.location.replace("/") }} color="primary">Redirect</Button>
-                    </DialogActions>
-                </Dialog>;
-
-            this.setState({ dialogMessage: successDialog });
-
+            setDialogState(true);
             setTimeout(() => {
                 window.location.replace("/");
             }, 3000);
         } else {
-            this.setState({snackBarOpen:true,errorMessage: "Username or password is incorrect." });
+            setSnackbarMessage("Username or password is incorrect")
+            setSnackbarStatus(true);
+            setTimeout(()=>{setSnackbarStatus(false)},1000);
         }
     }
-    render() {
-        return (
-            <Container className="formClass" maxWidth="sm">
-                <form onSubmit={this.submitAction}>
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
-                            <TextInput variant="outlined" type="text" name="username" label="Username" required />
-                        </Grid>
-                        <Grid item xs={12} sm={6}>
-                            <TextInput variant="outlined" type={this.state.passwordPeekState ? "text" : "password"} name="password" label="Password" required InputProps={{ endAdornment: <InputAdornment position="end"><IconButton onClick={this.handleTogglePasswordView}>{this.state.passwordPeekState ? <Visibility /> : <VisibilityOff />}</IconButton></InputAdornment> }} />
-                        </Grid>
-                        <Grid item xs={12}>
-                            <Button color="primary" variant="outlined" style={{ margin: "0.5em" }} type="submit">Login</Button>
-                            <Button color="primary" size="small" variant="text" style={{ margin: "0.5em" }} href="/register">Register</Button>
-                        </Grid>
-                    </Grid>
-                </form>
-                {this.state.dialogMessage}
-                <Snackbar
-                    anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'center',
-                    }}
-                    open={this.state.snackBarOpen}
-                    autoHideDuration={6000}
-                    onClose={this.closeSnackbar}
-                    message={<span>{this.state.errorMessage}</span>}/>
-            </Container >
-        )
+
+    function redirect() {
+        window.location.href = '/';
     }
+
+
+        return (
+            <div>
+                {props.isAuthed ? redirect() :
+                    <Container className="formClass" maxWidth="sm">
+                        <form onSubmit={submitAction}>
+                            <Grid container spacing={2}>
+                                <Grid item xs={12} sm={6}>
+                                    <TextInput variant="outlined" type="text" name="username" label="Username" required />
+                                </Grid>
+                                <Grid item xs={12} sm={6}>
+                                    <PasswordField />
+                                </Grid>
+                                <Grid item xs={12}>
+                                    <Button color="primary" variant="outlined" style={{ margin: "0.5em" }} type="submit">Login</Button>
+                                    <Button color="primary" size="small" variant="text" style={{ margin: "0.5em" }} href="/register">Register</Button>
+                                </Grid>
+                            </Grid>
+                        </form>
+                        <SuccessDialog open={dialogState}/>
+                        <ErrorSnackbar open={snackbarStatus} message={snackbarMessage} />
+                    </Container >
+                }
+            </div>
+        )
 }
 
 export default LoginPage;

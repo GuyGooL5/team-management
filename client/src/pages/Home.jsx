@@ -1,43 +1,47 @@
 /* eslint-disable no-useless-constructor */
 /* eslint-disable react/react-in-jsx-scope */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Button } from "@material-ui/core";
+import { Dashboard, Welcome } from "./components";
 
-class HomePage extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            name: ''
-        }
-    }
-    componentWillMount() {
-        if (this.props.user) {
-            this.setState({ name: this.props.user.firstname ? this.props.user.firstname : this.props.user.username });
-        }
-    }
-    render() {
-        const notAuthedButtons = 
+function NoAuthButtons() {
+    return (
         <div>
             <Button color="inherit" href="/login">Login</Button>
             <Button color="inherit" href="/register">Register</Button>
         </div>
-        const authedButtons = 
+
+    )
+}
+function AuthButtons() {
+    return (
         <div>
-            <Button color="inherit" href="/dashboard">Dashboard</Button>
             <Button color="inherit" href="/logout">Logout</Button>
         </div>
-        return (
+
+    )
+}
+function HomePage(props) {
+    const [name, setName] = useState('');
+
+    useEffect(() => {
+        if (props.user) setName(props.user.firstname ? props.user.firstname : props.user.username);
+    },[props.user])
+
+    return (
+        <div>
             <AppBar position='static'>
                 <Toolbar>
-                    <Typography variant="h6">{`Welcome ${this.state.name}`}</Typography>
-                    {this.props.isAuthed?authedButtons:notAuthedButtons}
+                    <Typography style={{ flexGrow: 1 }} variant="h6">{`Welcome ${name}`}</Typography>
+                    {props.isAuthed ? <AuthButtons/> : <NoAuthButtons/>}
                 </Toolbar>
 
             </AppBar>
 
+            {props.isAuthed ? <Dashboard /> : <Welcome />}
+        </div>
 
-        )
-    }
+    )
+
 }
-
 export default HomePage;

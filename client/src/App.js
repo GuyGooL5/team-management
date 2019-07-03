@@ -1,47 +1,40 @@
 /* eslint-disable eqeqeq */
-import React from 'react';
+import React,{useState,useEffect} from 'react';
 import { BrowserRouter as Router, Route, Switch} from "react-router-dom";
 import {CssBaseline} from '@material-ui/core/';
 
 
 import {LoginPage,HomePage,RegisterPage,LogoutPage, NotFoundPage} from "./pages";
 
-class App extends React.Component{
-  constructor(){
-    super();
-    this.checkLogin = this.checkLogin.bind(this);
-    this.state={
-      autherized:null,
-      user:null
-    }
-  }
+function App(){
+  const [authorized, setAuthorized] = useState(null);
+  const [user, setUser] = useState(null)
 
-  async checkLogin(){
+  const checkLogin = async ()=>{
     let data =await  fetch('users/profile')
     if (data.status==200){
       let userData = await data.json();
-      this.setState({autherized:true,user:userData.user});
+      setAuthorized(true)
+      setUser(userData.user);
     }
   }
-  componentWillMount(){
-    this.checkLogin()
-  }
-  render(){
+  useEffect(()=>{
+    checkLogin()
+  })
   return (
     <div className="App">
       <CssBaseline/>
         <Router>
           <Switch>
-        <Route exact path="/" component={()=><HomePage user={this.state.user} isAuthed={this.state.autherized}/>}/>
-        <Route path="/login" component={LoginPage}/>
-        <Route path="/register" component={RegisterPage}/>
-        <Route path="/logout" component={()=><LogoutPage isAuthed={this.state.autherized}/>}/>
+        <Route exact path="/" component={()=><HomePage user={user} isAuthed={authorized}/>}/>
+        <Route path="/login" component={()=><LoginPage isAuthed={authorized}/>}/>
+        <Route path="/register" component={()=><RegisterPage isAuthed={authorized}/>}/>
+        <Route path="/logout" component={()=><LogoutPage isAuthed={authorized}/>}/>
         <Route component={NotFoundPage} />
           </Switch>
       </Router>
     </div>
-  );
-  }
+  )
 }
 
 export default App;
