@@ -9,7 +9,7 @@ module.exports = (req, res) => {
             if (err) res.send({
                 error: 'error processing request'
             });
-            if (user) res.send({
+            else if (user) res.send({
                 success: false,
                 msg: "Email is already taken."
             });
@@ -25,7 +25,7 @@ module.exports = (req, res) => {
             if (err) res.send({
                 error: 'error processing request'
             });
-            if (user) res.send({
+            else if (user) res.send({
                 success: false,
                 msg: "Username is already taken."
             });

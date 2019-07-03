@@ -24,9 +24,9 @@ function FailDialog(props) {
     )
 
 }
-function LogoutPage() {
+export default function LogoutPage() {
     const [dialogStatus, setDialogStatus] = useState(false)
-    
+
     useEffect(() => {
         performLogout()
     })
@@ -48,4 +48,3 @@ function LogoutPage() {
     )
 }
 
-export default LogoutPage;

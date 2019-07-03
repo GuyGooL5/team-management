@@ -5,7 +5,7 @@ const passport = require('passport');
 module.exports = (req, res) => {
     User.findById(req.user._id, (err, user) => {
         if (err) res.status(401).send('Unautherized').cookie('token', null);
-        res.status(200).send({
+        else res.status(200).send({
             user: {
                 username: user.username,
                 email: user.email,

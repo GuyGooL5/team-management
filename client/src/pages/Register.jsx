@@ -25,6 +25,8 @@ import { styled, ThemeProvider } from '@material-ui/styles';
 import { createMuiTheme } from "@material-ui/core/styles";
 import { green } from "@material-ui/core/colors";
 
+import { AuthData } from "../providers/";
+
 const theme = createMuiTheme({
     palette: {
         primary: green,
@@ -142,7 +144,7 @@ function SuccessDialog(props) {
     )
 }
 
-function RegisterPage(props) {
+export default function RegisterPage(props) {
     const [dialogState, updateDialogState] = useState(false);
     const [errorMessage, updateErrorMessage] = useState(false);
 
@@ -193,8 +195,10 @@ function RegisterPage(props) {
         window.location.href='/';
     }
     return (
+        <AuthData.Consumer>
+            {ctx=>
         <div>
-        {props.isAuthed?redirect():
+        {ctx.isAuthed?redirect():
         <Container maxWidth="sm">
             <form onSubmit={submitAction}>
                 <Grid container spacing={2}>
@@ -223,7 +227,7 @@ function RegisterPage(props) {
             <Typography variant="subtitle1" style={{ color: "red" }}>{errorMessage}</Typography>
         </Container >}
     </div>
+    }
+    </AuthData.Consumer>
     )
 }
-
-export default RegisterPage;

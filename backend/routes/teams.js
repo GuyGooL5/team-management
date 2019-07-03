@@ -12,7 +12,9 @@ router.post('/addmember',passport.authenticate('jwt',{session:false}),require('.
 router.post('/permit',passport.authenticate('jwt',{session:false}),require('./teams/permitMember'));
 router.post('/removemember',passport.authenticate('jwt',{session:false}),require('./teams/removeMember'));
 router.delete('/delete/:id',passport.authenticate('jwt',{session:false}),require('./teams/delete'));
-router.use('/find',require('./teams/find'));
+
+
+router.use('/find',passport.authenticate('jwt',{session:false}),require('./teams/find'));
 
 
 

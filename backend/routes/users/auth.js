@@ -12,7 +12,7 @@ module.exports = (req, res) => {
     } = req.body;
     User.getUserByUsername(username, (err, user) => {
         if (err) throw err;
-        if (!user) return res.json({
+        else if (!user) return res.json({
             success: false,
             msg: 'User not found'
         });
@@ -22,10 +22,10 @@ module.exports = (req, res) => {
                 const token = jwt.sign({
                     data: user
                 }, config.secret, {
-                    expiresIn: "604800"
+                    expiresIn: "604800000"
                 });
                 res.cookie('token', token, {
-                    maxAge: 60 * 60 * 24 * 7,
+                    maxAge: 604800000,
                     httpOnly: true
                 });
                 res.json({

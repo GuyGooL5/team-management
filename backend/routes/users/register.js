@@ -20,19 +20,23 @@ module.exports = (req, res) => {
     else res.status(400).send({
         error: "Invalid Password"
     });
+    if (bodyObj.username && bodyObj.email && bodyObj.password) {
 
-    //create new user model in database
-    let newUser = new User(bodyObj);
+        //create new user model in database
+        let newUser = new User(bodyObj);
 
-    //use custom method from user model class to create a user and return a success message
-    User.createUser(newUser, (err, user) => {
-        if (err) res.send({
-            success: false,
-            msg: 'Failed to register user'
+        //use custom method from user model class to create a user and return a success message
+        User.createUser(newUser, (err, user) => {
+            if (err) res.send({
+                success: false,
+                msg: 'Failed to register user'
+            });
+            else res.send({
+                success: true,
+                msg: 'User Registered'
+            });
         });
-        else res.send({
-            success: true,
-            msg: 'User Registered'
-        });
-    });
+    } else res.status(500).send({
+        error: 'Internal Error'
+    })
 }

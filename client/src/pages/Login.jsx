@@ -22,6 +22,7 @@ import {
 
 import { styled } from '@material-ui/styles';
 
+import { AuthData } from "../providers/";
 //text input with custom css features
 const TextInput = styled(TextField)({
     margin: '8px',
@@ -79,7 +80,7 @@ function SuccessDialog(props){
 )
 }
 
-function LoginPage(props) {
+export default function LoginPage(props) {
     const [dialogState, setDialogState] = useState(false);
     const [snackbarStatus, setSnackbarStatus] = useState(false)
     const [snackbarMessage, setSnackbarMessage] = useState('')
@@ -118,8 +119,10 @@ function LoginPage(props) {
 
 
         return (
+            <AuthData.Consumer>
+                {ctx=>
             <div>
-                {props.isAuthed ? redirect() :
+                {ctx.isAuthed ? redirect() :
                     <Container className="formClass" maxWidth="sm">
                         <form onSubmit={submitAction}>
                             <Grid container spacing={2}>
@@ -140,7 +143,9 @@ function LoginPage(props) {
                     </Container >
                 }
             </div>
+                }
+                </AuthData.Consumer>
         )
 }
 
-export default LoginPage;
+ 

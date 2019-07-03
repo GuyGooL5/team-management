@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, Button } from "@material-ui/core";
 import { Dashboard, Welcome } from "./components";
 
+import { AuthData } from "../providers/";
 function NoAuthButtons() {
     return (
         <div>
@@ -21,27 +22,29 @@ function AuthButtons() {
 
     )
 }
-function HomePage(props) {
-    const [name, setName] = useState('');
-
-    useEffect(() => {
-        if (props.user) setName(props.user.firstname ? props.user.firstname : props.user.username);
-    },[props.user])
-
+export default function HomePage() {
     return (
-        <div>
-            <AppBar position='static'>
-                <Toolbar>
-                    <Typography style={{ flexGrow: 1 }} variant="h6">{`Welcome ${name}`}</Typography>
-                    {props.isAuthed ? <AuthButtons/> : <NoAuthButtons/>}
-                </Toolbar>
+        <AuthData.Consumer>
+            {ctx => {
+                let name='';
+                if(ctx.user){
+                    name=ctx.user.firstname?ctx.user.firstname:ctx.user.username
+                }
+                return (
+                    <div>
+                        <AppBar position='static'>
+                            <Toolbar>
+                                <Typography style={{ flexGrow: 1 }} variant="h6">{`Welcome ${name}`}</Typography>
+                                {ctx.isAuthed ? <AuthButtons /> : <NoAuthButtons />}
+                            </Toolbar>
 
-            </AppBar>
-
-            {props.isAuthed ? <Dashboard /> : <Welcome />}
-        </div>
+                        </AppBar>
+                        {ctx.isAuthed ? <Dashboard user={ctx.user} /> : <Welcome />}
+                    </div>
+                )
+            }}
+        </AuthData.Consumer>
 
     )
 
 }
-export default HomePage;

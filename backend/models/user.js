@@ -72,17 +72,14 @@ User.addTeam = (userId, teamId, callback) => {
     }, callback);
 }
 User.getTeamsByUserId = (userId, callback) => {
-    User.findById(userId).populate({
+    User.findById(userId,'teams').populate({
         path: 'teams',
         populate: {
             path: 'members.user',
             model: 'User',
             select: 'firstname lastname username email'
         }
-    }).exec((err, user) => {
-        console.log(user);
-        console.log(teams);
-    });
+    }).exec(callback)
 }
 User.removeTeam = (userId,teamId,callback)=>{
     User.findByIdAndUpdate(userId,{$pull:{teams:teamId}},callback);

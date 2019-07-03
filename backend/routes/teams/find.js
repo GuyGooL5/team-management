@@ -9,7 +9,6 @@ const router = express.Router();
 
 router.get('/',(req,res)=>{res.send('im working')})
 
-router.get('/userid',(req,res)=>{res.status(400).send({error:"please specify userid"})})
-router.get('/userid/:id',require('./find/userid'));
+router.get('/userid',require('./find/userid'));
 
 module.exports = router;
