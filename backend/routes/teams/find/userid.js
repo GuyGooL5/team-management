@@ -6,7 +6,7 @@ const Team = require('../../../models/team');
 module.exports = (req, res) => {
     if(req.params.id){
         User.getTeamsByUserId(req.params.id,(err,user)=>{
-            if(err) throw err;
+            if(err) res.status(400).send(err);
             if(user) res.send(user);
         });
     }

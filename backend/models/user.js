@@ -1,10 +1,10 @@
 const {
     Schema,
-    model
+    model,
+    Types
 } = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-const Team = require('./team');
 //User Schema
 const UserSchema = Schema({
     firstname: {
@@ -72,16 +72,21 @@ User.addTeam = (userId, teamId, callback) => {
     }, callback);
 }
 User.getTeamsByUserId = (userId, callback) => {
-    User.findById(userId, 'teams').populate({
+    User.findById(userId).populate({
         path: 'teams',
         populate: {
             path: 'members.user',
-            model:'User',
+            model: 'User',
             select: 'firstname lastname username email'
         }
-    }).exec(callback);
+    }).exec((err, user) => {
+        console.log(user);
+        console.log(teams);
+    });
 }
-
+User.removeTeam = (userId,teamId,callback)=>{
+    User.findByIdAndUpdate(userId,{$pull:{teams:teamId}},callback);
+}
 User.comparePassword = (candid, hash, callback) => {
     bcrypt.compare(candid, hash, (err, isMatch) => {
         if (err) throw err;
