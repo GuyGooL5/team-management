@@ -37,7 +37,6 @@ export default function NewTeamComponent(props) {
     const classes = useStyles();
     const [dialogState, setDialogState] = useState(false);
     const [circularState, setCircularState] = useState(false);
-    const [snackbarStatus, setSnackbarStatus] = useState(false)
     const [snackbarState, setSnackbarState] = useState({state:false,message:''});
 
     const handlers={

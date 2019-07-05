@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Route } from "react-router-dom";
 import {
     NewTeamComponent,
     NoTeamsMessage,
@@ -20,11 +19,12 @@ export default function Dashboard({match,user}) {
             let response = await fetch(`/api/teams/find/all`);
             let {teams} = await response.json();
             setTeams(teams);
-        } else return null;
+        }
     }
 
     useEffect(() => {
         getTeams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     },[user])
     return (
         <div>

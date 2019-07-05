@@ -1,9 +1,6 @@
-/* eslint-disable no-useless-constructor */
-/* eslint-disable react/react-in-jsx-scope */
 import React, { useState } from 'react';
 import { AppBar, Toolbar, Typography, Button, Dialog, DialogContent, DialogTitle, DialogContentText, DialogActions, IconButton } from "@material-ui/core";
 import { Link } from "react-router-dom";
-import { AuthData } from "../../providers";
 import { Home } from '@material-ui/icons';
 
 

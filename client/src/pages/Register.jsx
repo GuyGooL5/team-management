@@ -22,16 +22,8 @@ import {
 } from '@material-ui/icons';
 
 import { styled, } from '@material-ui/styles';
-import { createMuiTheme, makeStyles } from "@material-ui/core/styles";
-import { green } from "@material-ui/core/colors";
+import { makeStyles } from "@material-ui/core/styles";
 
-import { AuthData } from "../providers/";
-
-const theme = createMuiTheme({
-    palette: {
-        primary: green,
-    },
-});
 
 //text input with custom css features
 const TextInput = styled(TextField)({
@@ -45,21 +37,21 @@ const outlinedStyle = makeStyles({
             '& fieldset': {
                 borderColor: 'green',
             },
-            '&:focus fieldset':{
-                borderColor:'green'
+            '&:focus fieldset': {
+                borderColor: 'green'
             },
-            '&:hover fieldset':{
-                borderColor:'green'
+            '&:hover fieldset': {
+                borderColor: 'green'
             },
-            '&:active fieldset':{
-                borderColor:'green'
+            '&:active fieldset': {
+                borderColor: 'green'
             }
         }
     }
 })
 //Password input wrapper
 function PassowrdInput() {
-    const classes=outlinedStyle();
+    const classes = outlinedStyle();
     const [peek, setPeek] = useState(false);
     const [touched, touch] = useState(false);
     const [valid, setValidity] = useState(true);
@@ -73,7 +65,7 @@ function PassowrdInput() {
         setPeek(!peek);
     }
     return (
-        <TextInput className={touched&&valid?classes.valid:null}
+        <TextInput className={touched && valid ? classes.valid : null}
             variant="outlined" color="primary" name="password" label="Password" required
             onChange={validatePasswordPattern}
             error={!valid}
@@ -92,7 +84,7 @@ function PassowrdInput() {
 }
 
 function ValidationField(props) {
-    const classes=outlinedStyle();
+    const classes = outlinedStyle();
     const [touched, touch] = useState(false);
 
     const [fieldValid, updateFieldValidity] = useState(true);
@@ -132,13 +124,13 @@ function ValidationField(props) {
     }
 
     return (
-            <TextInput className={touched && fieldValid ? classes.valid : null}
-                variant="outlined" type={props.type} name={props.name} label={props.label} required
-                onChange={validateFieldNotTaken}
-                error={!fieldValid}
-                inputProps={{ pattern: props.pattern }}
-                helperText={fieldMessage}
-            />
+        <TextInput className={touched && fieldValid ? classes.valid : null}
+            variant="outlined" type={props.type} name={props.name} label={props.label} required
+            onChange={validateFieldNotTaken}
+            error={!fieldValid}
+            inputProps={{ pattern: props.pattern }}
+            helperText={fieldMessage}
+        />
     )
 }
 
@@ -204,42 +196,32 @@ export default function RegisterPage(props) {
             updateErrorMessage("Authentication error accoured, try reloading the page.");
         }
     }
-    function redirect() {
-        props.history.goBack();
-    }
     return (
-        <AuthData.Consumer>
-            {ctx =>
-                <div>
-                    {ctx.isAuthed ? redirect() :
-                        <Container maxWidth="sm">
-                            <form onSubmit={submitAction}>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={12} sm={6} >
-                                        <TextInput variant="outlined" type="text" name="firstName" label="First Name" />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <TextInput variant="outlined" type="text" name="lastName" label="Last Name" />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <ValidationField name="email" label="Email" type="email" pattern="^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <ValidationField name="username" label="Username" type="text" pattern="^[A-Za-z0-9_]{2,15}$" />
-                                    </Grid>
-                                    <Grid item xs={12} sm={6}>
-                                        <PassowrdInput />
-                                    </Grid>
-                                    <Grid item xs={12}>
-                                        <Button color="primary" variant="outlined" style={{ margin: "0.5em" }} type="submit">Register</Button>
-                                    </Grid>
-                                </Grid>
-                            </form>
-                            <SuccessDialog open={dialogState} />
-                            <Typography variant="subtitle1" style={{ color: "red" }}>{errorMessage}</Typography>
-                        </Container >}
-                </div>
-            }
-        </AuthData.Consumer>
+        <Container maxWidth="sm">
+            <form onSubmit={submitAction}>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6} >
+                        <TextInput variant="outlined" type="text" name="firstName" label="First Name" />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <TextInput variant="outlined" type="text" name="lastName" label="Last Name" />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <ValidationField name="email" label="Email" type="email" pattern="^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$" />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <ValidationField name="username" label="Username" type="text" pattern="^[A-Za-z0-9_]{2,15}$" />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <PassowrdInput />
+                    </Grid>
+                    <Grid item xs={12}>
+                        <Button color="primary" variant="outlined" style={{ margin: "0.5em" }} type="submit">Register</Button>
+                    </Grid>
+                </Grid>
+            </form>
+            <SuccessDialog open={dialogState} />
+            <Typography variant="subtitle1" style={{ color: "red" }}>{errorMessage}</Typography>
+        </Container >
     )
 }

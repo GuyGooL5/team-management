@@ -6,7 +6,6 @@ import { CssBaseline } from '@material-ui/core/';
 
 import { LoginPage, RegisterPage, NotFoundPage } from "./pages";
 
-import { AuthData } from "./providers/index";
 import { Dashboard, Navbar, Welcome } from './pages/components';
 import SelectedTeamDailog from './pages/components/Dashboard/SelectedTeamDialog';
 

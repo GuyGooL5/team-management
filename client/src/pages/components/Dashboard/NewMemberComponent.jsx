@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import {
     Popover,
-    Paper,
     List,
     ListItem,
     Button,
@@ -24,6 +23,7 @@ function Items({ query, select }) {
 
     useEffect(() => {
         updateItems();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [query])
 
 
@@ -46,7 +46,7 @@ function Items({ query, select }) {
 }
 export default function NewMemberComponent(props) {
     const [anchorEl, setAnchorEl] = useState(null);
-    const [userText, setUserText] = useState(null)
+    const [userText, setUserText] = useState('')
     const [snackbarState, setSnackbarState] = useState({ state: false, message: '' });
     const [userResults, setUserResults] = useState([])
     const [selectedUser, setSelectedUser] = useState(null)
@@ -108,9 +108,6 @@ export default function NewMemberComponent(props) {
             handlers.openPopper(target);
             setUserResults(json);
         }
-        if (!json.length && Boolean(anchorEl)) {
-            props.close();
-        }
     }
     return (
         <React.Fragment>
@@ -125,7 +122,7 @@ export default function NewMemberComponent(props) {
                 <DialogContent>
                     <Typography variant="body1">Find users by Username, First name or Last name</Typography>
                     <TextField fullWidth style={{ margin: '8px' }} variant="outlined" type="name" name="name" label="Find user" required
-                        error={!userResults.length && touched && !selectedUser} value={userText} onEnter={findInQuery} onChange={findInQuery}
+                        error={!userResults.length && touched && !selectedUser} value={userText} onChange={findInQuery}
                     />
                     <Popover disableAutoFocus anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }} transformOrigin={{ vertical: 'top', horizontal: 'left' }}
                         open={Boolean(anchorEl)} anchorEl={anchorEl} onClose={handlers.closePopper} onExit={handlers.clearQuery}>

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-    Typography,
     IconButton,
     ListItem,
     ListItemText,
@@ -8,8 +7,7 @@ import {
     ListItemSecondaryAction,
     Divider
 } from "@material-ui/core";
-import { Person } from "@material-ui/icons";
-import { MoreVert } from "@material-ui/icons";
+import { Person, MoreVert } from "@material-ui/icons";
 import { MemberMenuComponent } from './';
 
 export default function MemberItem({currentUser, member, isLast,team_id }) {

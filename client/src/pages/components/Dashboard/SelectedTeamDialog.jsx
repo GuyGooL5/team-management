@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from "react-router-dom";
-import { Dialog, AppBar, Toolbar, List, Typography, IconButton, DialogContent, Button, Fab, DialogTitle, DialogActions } from "@material-ui/core";
+import { Dialog, AppBar, Toolbar, List, Typography, IconButton, DialogContent, Button, Fab } from "@material-ui/core";
 import { ArrowBack, MoreVert, PersonAdd } from "@material-ui/icons";
 
 import { TeamMenuComponent, MemberItem } from "./";
@@ -12,15 +12,14 @@ export default function SelectedTeamDailog({ match, user }) {
     const [anchorEl, setAnchorEl] = useState(null)
     const [newMemberDialog, setNewMemberDialog] = useState(false)
     const [team, setTeam] = useState({})
-    //useEffect(populateMembers, [props.selectedTeam.members]);
     useEffect(() => {
         getTeamDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const getTeamDetails = async (e) => {
         let res = await fetch(`/api/teams/find/team/${match.params.team_id}`);
         let json = await res.json();
-        console.log(json);
         if (json.success) {
             setTeam(json.team);
             populateMembers(json.team.members);
@@ -36,7 +35,7 @@ export default function SelectedTeamDailog({ match, user }) {
             let membersArray = [];
             for (let i in members) {
                 membersArray.push(
-                    <MemberItem key={i} team_id={match.params.team_id} currentUser={user} member={members[i]} isLast={(members.length - 1) == i} />
+                    <MemberItem key={i} team_id={match.params.team_id} currentUser={user} member={members[i]} isLast={(members.length - 1) === i} />
                 )
             }
             setMemberItems(membersArray);
@@ -76,7 +75,7 @@ export default function SelectedTeamDailog({ match, user }) {
                         {memberItems}
                     </List>
                     <Fab color="secondary" style={{ position: 'fixed', right: '50%', bottom: '16px' }} onClick={handlers.newDialogOpen}><PersonAdd /></Fab>
-                    <NewMemberComponent close={handlers.newDialogClose} team_id={match.params._id} open={newMemberDialog} />
+                    <NewMemberComponent close={handlers.newDialogClose} team_id={match.params.team_id} open={newMemberDialog} />
                 </DialogContent> :
                 <DialogContent>
                     <Typography>This team doesn't exist.</Typography>

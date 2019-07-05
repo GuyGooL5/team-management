@@ -17,7 +17,7 @@ export default function TeamMenuComponent(props) {
             if (json.success) {
                 setDialogState(false);
                 handlers.openSnackbar('Team deleted succesfully, reloading.')
-                setInterval(() => window.location.reload(), 2000);
+                setInterval(() => window.location.href="/", 1000);
                 setDeleteInProgress(false);
             } else {
                 setDialogState(false);

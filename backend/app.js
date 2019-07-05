@@ -89,7 +89,8 @@ app.use('/api/users', users);
 const teams = require('./routes/teams');
 app.use('/api/teams', teams);
 
-app.use('*',express.static('../client/build/'));
+app.use('/',express.static('../client/build'));
+app.use('/team/*',express.static('../client/build'));
 
 //Manage React stuff
 // app.get('*/*', (req, res) => {

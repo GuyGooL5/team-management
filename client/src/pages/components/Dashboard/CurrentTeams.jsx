@@ -1,31 +1,31 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Route } from "react-router-dom";
 import {
     Typography,
-    Dialog,
     Grid,
-    IconButton,
-    Container,
-    AppBar,
-    Toolbar,
-    
+    Container
 } from "@material-ui/core";
-import { MoreVert, ArrowBack} from "@material-ui/icons";
 import {
     SelectedTeamDialog,
-    MemberItem,
     TeamCard
  } from './'
 
 export default function CurrentTeams(props) {
 
     const [teamCards, setTeamCards] = useState(null);
-    const [userAsMember,setUserAsMember] = useState(props.currentUser);
     const [fullDialogState, setFullDialogState] = useState(false);
     const [selectedTeam, setSelectedTeam] = useState(null)
     useEffect(() => {
-        if(props.teams){
-            populateCards()
+        if (props.teams) {
+            let teamCards = [];
+            for (let i in props.teams) {
+                teamCards.push(
+                    <Grid style={{padding:'8px'}} key={i} item xs={12} sm={6} md={4} lg={3} xl={2}>
+                        <TeamCard key={i} index={i} team={props.teams[i]} />
+                    </Grid>
+                )
+            }
+            setTeamCards(teamCards);
         }
     }, [props.teams]);
 
@@ -40,22 +40,6 @@ export default function CurrentTeams(props) {
             setFullDialogState(true);
         }
     }
-
-    function populateCards() {
-        if (props.teams) {
-            let teamCards = [];
-            for (let i in props.teams) {
-                teamCards.push(
-                    <Grid style={{padding:'8px'}} key={i} item xs={12} sm={6} md={4} lg={3} xl={2}>
-                        <TeamCard key={i} index={i} team={props.teams[i]} />
-                    </Grid>
-                )
-            }
-            setTeamCards(teamCards);
-        }
-    }
-
-
 
     return (
         <div>
