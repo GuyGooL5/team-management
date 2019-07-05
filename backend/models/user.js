@@ -34,12 +34,39 @@ const UserSchema = Schema({
 });
 
 const User = model('User', UserSchema);
-
 User.getUserByUsername = (username, callback) => {
     const query = {
         username: username
     };
     User.findOne(query, callback);
+}
+User.queryUsers = (text, callback) => {
+    User.find({
+        $or: [{
+                username: {
+                    $regex: text,
+                    $options: 'i'
+                }
+            },
+            {
+                firstname: {
+                    $regex: text,
+                    $options: 'i'
+                }
+            },
+            {
+                lastname: {
+                    $regex: text,
+                    $options: 'i'
+                }
+            }
+        ]
+    }, 'firstname lastname username email _id').limit(5).exec((err, users) => {
+        if (err) callback(err, null);
+        else if (users) {
+            callback(null, users);
+        } else(callback(null, []));
+    })
 }
 User.getUserByEmail = (email, callback) => {
     const query = {
@@ -72,17 +99,17 @@ User.addTeam = (userId, teamId, callback) => {
     }, callback);
 }
 User.getTeamsByUserId = (userId, callback) => {
-    User.findById(userId,'teams').populate({
+    User.findById(userId, 'teams').populate({
         path: 'teams',
-        populate: {
-            path: 'members.user',
-            model: 'User',
-            select: 'firstname lastname username email'
-        }
+        select: 'name description _id members'
     }).exec(callback)
 }
-User.removeTeam = (userId,teamId,callback)=>{
-    User.findByIdAndUpdate(userId,{$pull:{teams:teamId}},callback);
+User.removeTeam = (userId, teamId, callback) => {
+    User.findByIdAndUpdate(userId, {
+        $pull: {
+            teams: teamId
+        }
+    }, callback);
 }
 User.comparePassword = (candid, hash, callback) => {
     bcrypt.compare(candid, hash, (err, isMatch) => {

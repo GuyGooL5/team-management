@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
+import { BrowserRouter as Route } from "react-router-dom";
 import {
     NewTeamComponent,
     NoTeamsMessage,
@@ -11,13 +11,13 @@ import {
 
 
 
-export default function Dashboard(props) {
+export default function Dashboard({match,user}) {
 
-    const [teams, setTeams] = useState(null);
+    const [teams, setTeams] = useState([]);
 
     const getTeams = async () => {
-        if (props.user) {
-            let response = await fetch(`teams/find/userid`);
+        if (user) {
+            let response = await fetch(`/api/teams/find/all`);
             let {teams} = await response.json();
             setTeams(teams);
         } else return null;
@@ -25,10 +25,10 @@ export default function Dashboard(props) {
 
     useEffect(() => {
         getTeams();
-    }, [])
+    },[user])
     return (
         <div>
-            {teams? <CurrentTeams teams={teams} /> : <NoTeamsMessage />}
+            {teams.length?<CurrentTeams currentUser={user} teams={teams} />:<NoTeamsMessage />}
             <NewTeamComponent getTeams={getTeams}></NewTeamComponent>
 
         </div>

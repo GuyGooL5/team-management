@@ -9,6 +9,7 @@ router.post('/register',require('./users/register'));
 router.post('/auth',require('./users/auth'));
 
 router.post('/validate',require('./users/validate'));
+router.get('/find/:text',require('./users/find'));
 
 
 //protected routes

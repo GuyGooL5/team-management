@@ -85,11 +85,12 @@ mongoose.connection.on('error', (err) => {
 
 //Routes
 const users = require('./routes/users');
-app.use('/users', users);
+app.use('/api/users', users);
 const teams = require('./routes/teams');
-app.use('/teams', teams);
+app.use('/api/teams', teams);
 
-app.use('/',express.static('../client/build/'));
+app.use('*',express.static('../client/build/'));
+
 //Manage React stuff
 // app.get('*/*', (req, res) => {
 //     res.send('404 Page not found').status(404);

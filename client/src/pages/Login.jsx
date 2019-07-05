@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import {
     Container,
     Grid,
@@ -91,7 +90,7 @@ export default function LoginPage(props) {
         for (let [field, value] of data.entries()) {
             body[field] = value;
         }
-        let response = await fetch('users/auth', {
+        let response = await fetch('/api/users/auth', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -114,7 +113,7 @@ export default function LoginPage(props) {
     }
 
     function redirect() {
-        window.location.href = '/';
+        props.history.goBack();
     }
 
 
@@ -134,7 +133,6 @@ export default function LoginPage(props) {
                                 </Grid>
                                 <Grid item xs={12}>
                                     <Button color="primary" variant="outlined" style={{ margin: "0.5em" }} type="submit">Login</Button>
-                                    <Button color="primary" size="small" variant="text" style={{ margin: "0.5em" }} href="/register">Register</Button>
                                 </Grid>
                             </Grid>
                         </form>

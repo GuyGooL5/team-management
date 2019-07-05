@@ -15,7 +15,7 @@ import {
     CircularProgress
 } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
-import { Add } from "@material-ui/icons";
+import { Create } from "@material-ui/icons";
 
 const useStyles = makeStyles(theme => ({
     danger: {
@@ -63,7 +63,7 @@ export default function NewTeamComponent(props) {
             body[key] = value;
         }
         setCircularState(true);
-        let req = await fetch('teams/new', {
+        let req = await fetch('/api/teams/new', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export default function NewTeamComponent(props) {
                 open={snackbarState.state} autoHideDuration={3000}
                 message={<span id="message-id">{snackbarState.message}</span>}
             />
-            <Fab onClick={handlers.clickOpen} className={classes.fab} color='secondary' aria-label="Add"><Add /></Fab>
+            <Fab onClick={handlers.clickOpen} className={classes.fab} color='secondary' aria-label="Create"><Create /></Fab>
             <Dialog open={dialogState} onClose={handlers.close}>
                 <form onSubmit={submitAction}>
                     <DialogTitle>Create a team</DialogTitle>
