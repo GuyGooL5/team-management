@@ -68,7 +68,11 @@ export default function NewMemberComponent(props) {
             setUserResults([]);
         }
     }
+    useEffect(() => {
+        return () => {
 
+        };
+    },)
     function popSnackbar(message) {
         setSnackbarState({ state: true, message: message });
         setInterval(() => {
@@ -92,8 +96,7 @@ export default function NewMemberComponent(props) {
             popSnackbar("Error: " + json.error);
         }
         else if (json.success) {
-            popSnackbar("Added new member");
-            window.location.reload();
+            props.refreshMembers();
         }
         else popSnackbar('Error proccessing request');
     }

@@ -22,5 +22,8 @@
     "morgan": "^1.9.1",
     "passport": "^0.4.0",
     "passport-jwt": "*"
+  },
+  "devDependencies": {
+    "supertest": "^4.0.2"
   }
 }

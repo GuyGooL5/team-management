@@ -10,11 +10,9 @@ import {
 import { Person, MoreVert } from "@material-ui/icons";
 import { MemberMenuComponent } from './';
 
-export default function MemberItem({currentUser, member, isLast,team_id }) {
+export default function MemberItem({user, member, isLast,team_id, refreshMembers }) {
 
     const [anchorEl, setAnchorEl] = useState(null)
-    useEffect(() => {
-    })
 
     const handlers = {
         openMenu: (e) => {
@@ -42,6 +40,6 @@ export default function MemberItem({currentUser, member, isLast,team_id }) {
 
                     </ListItem>
                     {isLast ? null : <Divider variant="inset" />}
-                    <MemberMenuComponent anchor={anchorEl} currentUser={currentUser} member={member.user} team_id={team_id} permission={member.permission} close={handlers.closeMenu}/>
+                    <MemberMenuComponent refreshMembers={refreshMembers} anchor={anchorEl} user={user} member={member.user} team_id={team_id} permission={member.permission} close={handlers.closeMenu}/>
                 </React.Fragment>    )
 }

@@ -7,7 +7,6 @@ import { CssBaseline } from '@material-ui/core/';
 import { LoginPage, RegisterPage, NotFoundPage } from "./pages";
 
 import { Dashboard, Navbar, Welcome } from './pages/components';
-import SelectedTeamDailog from './pages/components/Dashboard/SelectedTeamDialog';
 
 export default function App() {
   const [authorized, setAuthorized] = useState(null);
@@ -24,6 +23,7 @@ export default function App() {
   }
   useEffect(() => {
     checkLogin();
+
   }, [])
 
   return (
@@ -37,11 +37,11 @@ export default function App() {
 
 
         <Switch>
-          <Route exact path="/" render={(routerProps)=>authorized?<Dashboard {...routerProps} user={user}/>:<Welcome/>} />
-          <Route path="/team/:team_id" render={(routerProps)=>authorized?<SelectedTeamDailog {...routerProps} user={user}/>:null}/>
+          <Route exact path="/" render={()=>authorized?<Redirect to="/dashboard"/>:<Welcome/>} />
+          <Route path="/dashboard" render={(routerProps)=>authorized?<Dashboard keepMounted {...routerProps} authorized={authorized} user={user}/>:<Redirect to="/"/>}/>
           <Route path="/login" component={()=>authorized?redirectHome:<LoginPage/>} />
           <Route path="/register" component={()=>authorized?redirectHome:<RegisterPage/>} />
-          <Route component={NotFoundPage} />
+          {/* <Route component={NotFoundPage} /> */}
         </Switch>
       </Router>
     </div>

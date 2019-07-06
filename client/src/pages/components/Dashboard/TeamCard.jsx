@@ -9,12 +9,12 @@ import {
 } from "@material-ui/core";
 import {OpenInNew} from "@material-ui/icons";
 
-export default function TeamCard({team}) {
+export default function TeamCard({team,setTeamId}) {
 
     return (
         <Card>
 
-            <CardActionArea component={Link} to={`/team/${team._id}`}>
+            <CardActionArea onClick={()=>setTeamId(team._id)}>
                 <CardContent>
                     <Typography variant="h5">{team.name}</Typography>
                     <Typography variant="body1">{team.description || 'No description'}</Typography>

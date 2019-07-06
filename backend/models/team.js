@@ -23,7 +23,7 @@ const TeamSchema = Schema({
     owner: {
         type: Schema.Types.ObjectId,
         require: true,
-        ref:"User"
+        ref: "User"
     },
     members: [MemberSchema]
 });
@@ -34,18 +34,21 @@ const Team = model('Team', TeamSchema);
 
 //Get a list of all the members of a team.
 Team.getTeamDetails = (teamId, callback) => {
-    Team.findById(teamId,'_id owner name description members.user members.since members.permission')
-    .populate('owner','_id firstname lastname username email')
-    .populate('members.user', '_id firstname lastname username email')
-    .exec((err, team) => {
-    if (err) {
-            if(err.kind=="ObjectId") callback({error:"Invalid team id."},false);
-            else callback(err,false);
-        } else if (team) {
-            callback(null,team);
-        }
-        else callback({error:"Cant find team"},false);
-    })
+    Team.findById(teamId, '_id owner name description members.user members.since members.permission')
+        .populate('owner', '_id firstname lastname username email')
+        .populate('members.user', '_id firstname lastname username email')
+        .exec((err, team) => {
+            if (err) {
+                if (err.kind == "ObjectId") callback({
+                    error: "Invalid team id."
+                }, false);
+                else callback(err, false);
+            } else if (team) {
+                callback(null, team);
+            } else callback({
+                error: "Cant find team"
+            }, false);
+        })
 }
 
 
@@ -55,11 +58,11 @@ Team.createTeam = (newTeam, callback) => {
     });
 }
 
-Team.deleteTeam = (teamId, ownerId, callback) => {
+Team.deleteTeam = (teamId, userId, callback) => {
     Team.findById(teamId, '_id owner', (err, team) => {
         if (err) callback(err);
-        if (team) {
-            if (String(ownerId) == String(team.owner)) {
+        else if (team) {
+            if (String(userId) == String(team.owner)) {
                 team.remove((err, team) => {
                     if (err) callback(err)
                     if (team) {
@@ -70,7 +73,9 @@ Team.deleteTeam = (teamId, ownerId, callback) => {
                         error: "Error occoured while deleting team"
                     })
                 })
-            }
+            } else callback({
+                error: "Only the owner can remove the team."
+            })
         } else callback({
             error: "Team not found."
         }, false);
@@ -195,52 +200,53 @@ Team.removeMember = (teamId, issuerId, memberId, callback) => {
             let issuer = team.members.find(obj => {
                 return String(obj.user) == String(issuerId);
             })
-            if(issuer){
+            if (issuer) {
 
-            
-            if (issuer.permission == "manager" || issuer.permission == "owner") {
-                //find if member exists
-                User.findById(memberId, (err, user) => {
-                    if (err) callback(err, null);
-                    //logic if member exists
-                    else if (user) {
-                        //test to see if the user is already in that team
-                        if (user.teams.includes(team._id)) {
-                            //remove the team reference from the user
-                            user.teams = user.teams.filter(el => {
-                                return String(el) !== String(team._id);
-                            })
-                            user.save((err, user) => {
-                                if (err) callback(err, null);
-                                else if (user) {
-                                    //test to see if the team is really not present
-                                    if (!user.teams.includes(team._id)) {
-                                        team.members = team.members.filter(obj => {
-                                            return String(obj.user) == String(issuerId);
-                                        })
-                                        team.save((err, team) => {
-                                            if (err) callback(err, null)
-                                            else if (team) callback(null, true);
-                                        })
-                                    }
-                                } else callback({
-                                    error: "Internal Error"
-                                });
-                            })
-                        } else callback({
-                            error: "This member is not in this team"
-                        });
-                    }
-                    //return if member doesn't exist on the database
-                    else callback({
-                        error: "Target member not found"
-                    }, false);
-                })
+                if (issuer.permission == "manager" || issuer.permission == "owner") {
+                    //find if member exists
+                    User.findById(memberId, (err, user) => {
+                        if (err) callback(err, null);
+                        //logic if member exists
+                        else if (user) {
+                            //test to see if the user is already in that team
+                            if (user.teams.includes(team._id)) {
+                                //remove the team reference from the user
+                                user.teams = user.teams.filter(el => {
+                                    return String(el) !== String(team._id);
+                                })
+                                user.save((err, user) => {
+                                    if (err) callback(err, null);
+                                    else if (user) {
+                                        //test to see if the team is really not present
+                                        if (!user.teams.includes(team._id)) {
+                                            team.members = team.members.filter(obj => {
+                                                return String(obj.user) == String(issuerId);
+                                            })
+                                            team.save((err, team) => {
+                                                if (err) callback(err, null)
+                                                else if (team) callback(null, true);
+                                            })
+                                        }
+                                    } else callback({
+                                        error: "Internal Error"
+                                    });
+                                })
+                            } else callback({
+                                error: "This member is not in this team"
+                            });
+                        }
+                        //return if member doesn't exist on the database
+                        else callback({
+                            error: "Target member not found"
+                        }, false);
+                    })
 
+                } else callback({
+                    error: "You have no permission to remove members"
+                }, false);
             } else callback({
-                error: "You have no permission to remove members"
-            }, false);
-        }else callback({error:"You are not a member in this team"});
+                error: "You are not a member in this team"
+            });
         } else callback({
             error: "Team not found"
         });

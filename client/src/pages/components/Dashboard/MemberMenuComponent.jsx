@@ -5,7 +5,7 @@ import { DeleteForever, Edit, Info } from "@material-ui/icons";
 
 
 
-export default function MemberMenuComponent({ permission, anchor, close, member, team_id }) {
+export default function MemberMenuComponent({ permission, anchor, close, member, team_id, refreshMembers }) {
     const [snackbarState, setSnackbarState] = useState({ open: false, message: '' });
     const deleteMember = async () => {
         let response = await fetch('/api/teams/removemember', {
@@ -24,8 +24,7 @@ export default function MemberMenuComponent({ permission, anchor, close, member,
             openSnackbar(`Error: ${json.error}`);
         }
         if (json.success) {
-            openSnackbar('Successfuly removed member');
-            window.location.reload();
+            refreshMembers();
         }
     }
     function openSnackbar(message) {

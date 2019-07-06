@@ -1,33 +1,43 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from "react-router-dom";
-import { Dialog, AppBar, Toolbar, List, Typography, IconButton, DialogContent, Button, Fab } from "@material-ui/core";
+import { Dialog, AppBar, Toolbar, List, Typography, IconButton, DialogContent, Fab } from "@material-ui/core";
 import { ArrowBack, MoreVert, PersonAdd } from "@material-ui/icons";
 
 import { TeamMenuComponent, MemberItem } from "./";
 import NewMemberComponent from './NewMemberComponent';
 
-export default function SelectedTeamDailog({ match, user }) {
-    const [dialogStatus, setDialogStatus] = useState(null)
+export default function SelectedTeamDailog({ user, team_id, close, refreshTeams }) {
     const [memberItems, setMemberItems] = useState(null)
     const [anchorEl, setAnchorEl] = useState(null)
     const [newMemberDialog, setNewMemberDialog] = useState(false)
     const [team, setTeam] = useState({})
+    const [dialogState, setDialogState] = useState(false)
     useEffect(() => {
-        getTeamDetails();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        getTeamDetails()
+        //reset states upon unmount
+        return(resetStates);
+    }, [team_id]);
+
+    function resetStates(){
+        setAnchorEl(null);
+        setNewMemberDialog(false);
+        setMemberItems(null);
+        setTeam({});
+    }
 
     const getTeamDetails = async (e) => {
-        let res = await fetch(`/api/teams/find/team/${match.params.team_id}`);
-        let json = await res.json();
-        if (json.success) {
-            setTeam(json.team);
-            populateMembers(json.team.members);
-            setDialogStatus(true);
-        }
-        else {
-            setDialogStatus(false);
-        }
+        resetStates();
+        if(team_id){
+            let res = await fetch(`/api/teams/find/team/${team_id}`);
+            let json = await res.json();
+            if (json.success) {
+                setTeam(json.team);
+                populateMembers(json.team.members);
+                setDialogState(true);
+            }
+            else {
+                setDialogState(false);
+            }
+        }else setDialogState(false);
     }
 
     function populateMembers(members) {
@@ -35,7 +45,7 @@ export default function SelectedTeamDailog({ match, user }) {
             let membersArray = [];
             for (let i in members) {
                 membersArray.push(
-                    <MemberItem key={i} team_id={match.params.team_id} currentUser={user} member={members[i]} isLast={(members.length - 1) === i} />
+                    <MemberItem refreshMembers={getTeamDetails} key={i} team_id={team_id} user={user} member={members[i]} isLast={(members.length - 1) === i} />
                 )
             }
             setMemberItems(membersArray);
@@ -43,6 +53,10 @@ export default function SelectedTeamDailog({ match, user }) {
     }
 
     const handlers = {
+        teamDelete:()=>{
+            setDialogState(false);
+            refreshTeams();
+        },
         menuOpen: (e) => {
             setAnchorEl(e.currentTarget);
         },
@@ -58,16 +72,15 @@ export default function SelectedTeamDailog({ match, user }) {
     }
 
     return (
-        <Dialog fullWidth fullScreen open>
+        <Dialog fullWidth  open={dialogState}>
             <AppBar position="static">
                 <Toolbar>
-                    <IconButton edge="start" color="inherit" component={Link} to="/"><ArrowBack /></IconButton>
+                    <IconButton edge="start" color="inherit" onClick={close}><ArrowBack /></IconButton>
                     <Typography variant="h5" style={{ flexGrow: 1 }}>Team Management</Typography>
-                    {dialogStatus ? <IconButton edge="end" color="inherit" onClick={handlers.menuOpen}><MoreVert /></IconButton> : null}
+                    <IconButton edge="end" color="inherit" onClick={handlers.menuOpen}><MoreVert /></IconButton>
                 </Toolbar>
             </AppBar>
-            <TeamMenuComponent anchor={anchorEl} team={team} close={handlers.menuClose} onClick={handlers.menuClose} />
-            {dialogStatus ?
+            <TeamMenuComponent onDelete={handlers.teamDelete} anchor={anchorEl} team={team} user={user} close={handlers.menuClose} onClick={handlers.menuClose} />
                 <DialogContent>
                     <Typography variant="h4">{team.name}</Typography>
                     <Typography variant="h6">{team.description}</Typography>
@@ -75,13 +88,8 @@ export default function SelectedTeamDailog({ match, user }) {
                         {memberItems}
                     </List>
                     <Fab color="secondary" style={{ position: 'fixed', right: '50%', bottom: '16px' }} onClick={handlers.newDialogOpen}><PersonAdd /></Fab>
-                    <NewMemberComponent close={handlers.newDialogClose} team_id={match.params.team_id} open={newMemberDialog} />
-                </DialogContent> :
-                <DialogContent>
-                    <Typography>This team doesn't exist.</Typography>
-                    <Button variant="outlined" color="primary" component={Link} to="/">Home</Button>
+                    <NewMemberComponent refreshMembers={getTeamDetails} close={handlers.newDialogClose} team_id={team_id} open={newMemberDialog} />
                 </DialogContent>
-            }
         </Dialog>
     )
 }

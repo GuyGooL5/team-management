@@ -75,7 +75,7 @@ export default function NewTeamComponent(props) {
             setDialogState(false);
             setCircularState(false);
             popSnackbar('Team created successfully')
-            props.getTeams();
+            props.refreshTeams();
 
         }
         else if (json.error) {

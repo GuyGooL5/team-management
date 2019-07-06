@@ -16,9 +16,8 @@ export default function TeamMenuComponent(props) {
             let json = await response.json()
             if (json.success) {
                 setDialogState(false);
-                handlers.openSnackbar('Team deleted succesfully, reloading.')
-                setInterval(() => window.location.href="/", 1000);
                 setDeleteInProgress(false);
+                props.onDelete();
             } else {
                 setDialogState(false);
                 setDeleteInProgress(false);
@@ -26,6 +25,7 @@ export default function TeamMenuComponent(props) {
             }
         }
     }
+
     const handlers = {
         openDialog: () => {
             setDialogState(true);
