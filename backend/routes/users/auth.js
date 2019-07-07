@@ -1,8 +1,17 @@
 const jwt = require('jsonwebtoken');
 
+const bcrypt = require('bcryptjs');
 
 const config = require('../../config/database');
 const User = require('../../models/user');
+
+
+const comparePassword = (candid, hash, callback) => {
+    bcrypt.compare(candid, hash, (err, isMatch) => {
+        if (err) throw err;
+        callback(null, isMatch);
+    })
+}
 
 //Authenticattion is a post method
 module.exports = (req, res) => {
@@ -10,15 +19,16 @@ module.exports = (req, res) => {
         username,
         password
     } = req.body;
-    User.getUserByUsername(username, (err, user) => {
+
+    if(username && password) User.getUserByUsername(username, (err, user) => {
         if (err) throw err;
         else if (!user) return res.json({
             success: false,
             msg: 'User not found'
         });
-        User.comparePassword(password, user.password, (err, isMatch) => {
+        else comparePassword(password, user.password, (err, isMatch) => {
             if (err) throw err;
-            if (isMatch) {
+            else if (isMatch) {
                 const token = jwt.sign({
                     data: user
                 }, config.secret, {
@@ -34,7 +44,8 @@ module.exports = (req, res) => {
                         _id: user._id,
                         username: user.username,
                         email: user.email,
-                        name: user.name
+                        firstname: user.firstname,
+                        lastname:user.lastname
                     }
                 })
             } else res.json({
@@ -43,4 +54,5 @@ module.exports = (req, res) => {
             })
         });
     });
+    else res.status(400).send({error:'Bad Request'})
 }

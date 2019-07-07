@@ -8,23 +8,23 @@ const bcrypt = require('bcryptjs');
 //User Schema
 const UserSchema = Schema({
     firstname: {
-        type: String
+        type: Schema.Types.String
     },
     lastname: {
-        type: String
+        type: Schema.Types.String
     },
     email: {
-        type: String,
+        type: Schema.Types.String,
         unique: true,
         required: true
     },
     username: {
-        type: String,
+        type: Schema.Types.String,
+        unique: true,
         required: true,
-        unique: true
     },
     password: {
-        type: String,
+        type: Schema.Types.String,
         required: true
     },
     teams: [{
@@ -34,6 +34,17 @@ const UserSchema = Schema({
 });
 
 const User = model('User', UserSchema);
+
+UserSchema.path('username').validate(async (value)=>{
+    const usernameCount = await User.countDocuments({username:value});
+    return !usernameCount;
+},'Username already taken');
+
+UserSchema.path('email').validate(async (value)=>{
+    const emailCount = await User.countDocuments({email:value});
+    return !emailCount;
+},'Email already taken');
+
 User.getUserByUsername = (username, callback) => {
     const query = {
         username: username
@@ -41,39 +52,21 @@ User.getUserByUsername = (username, callback) => {
     User.findOne(query, callback);
 }
 User.queryUsers = (text, callback) => {
-    User.find({
-        $or: [{
-                username: {
-                    $regex: text,
-                    $options: 'i'
-                }
-            },
-            {
-                firstname: {
-                    $regex: text,
-                    $options: 'i'
-                }
-            },
-            {
-                lastname: {
-                    $regex: text,
-                    $options: 'i'
-                }
-            }
-        ]
-    }, 'firstname lastname username email _id').limit(5).exec((err, users) => {
-        if (err) callback(err, null);
-        else if (users) {
-            callback(null, users);
-        } else(callback(null, []));
-    })
+    User.find(
+        {$or: [
+            {username: {$regex: text,$options: 'i'}},
+            {firstname: {$regex: text,$options: 'i'}},
+            {lastname: {$regex: text,$options: 'i'}}
+        ]}, 'firstname lastname username email _id')
+        .limit(5)
+        .exec((err, users) => {
+            if (err) callback(err, null);
+            else if (users) {
+                callback(null, users);
+            } else(callback(null, []));
+        })
 }
-User.getUserByEmail = (email, callback) => {
-    const query = {
-        email: email
-    }
-    User.findOne(query, callback);
-}
+
 User.createUser = (newUser, callback) => {
     bcrypt.genSalt(10, (err, salt) => {
         if (err) throw err;
@@ -110,12 +103,6 @@ User.removeTeam = (userId, teamId, callback) => {
             teams: teamId
         }
     }, callback);
-}
-User.comparePassword = (candid, hash, callback) => {
-    bcrypt.compare(candid, hash, (err, isMatch) => {
-        if (err) throw err;
-        callback(null, isMatch);
-    })
 }
 
 module.exports = User;

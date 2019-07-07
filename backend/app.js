@@ -76,7 +76,7 @@ mongoose.connect(config.database_url, {
 })
 //Events
 mongoose.connection.on('connected', () => {
-    console.log('Connected to Database:', config.database_url);
+    console.log('Connected to Database:', config.database_url_prod);
 })
 mongoose.connection.on('error', (err) => {
     console.log('Database Error:', err);
@@ -103,3 +103,6 @@ const PORT = 3300;
 app.listen(PORT, () => {
     console.log('Server started on port:', PORT)
 })
+
+
+module.exports = app;

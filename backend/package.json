@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "test": "mocha \"./{,!(node_modules)/**/}*.test.js\""
   },
   "author": "Guy Tsitsiashvili",
   "license": "ISC",
@@ -24,6 +25,8 @@
     "passport-jwt": "*"
   },
   "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.1.4",
     "supertest": "^4.0.2"
   }
 }
