@@ -71,7 +71,7 @@ passport.deserializeUser(function (user, done) {
 
 //MongoDB
 //Connection Credentials
-mongoose.connect(config.database_url, {
+mongoose.connect(config.database_url_prod, {
     useNewUrlParser: true
 })
 //Events

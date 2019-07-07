@@ -51,33 +51,40 @@ User.getUserByUsername = (username, callback) => {
     };
     User.findOne(query, callback);
 }
-User.queryUsers = (text, callback) => {
-    User.find(
-        {$or: [
-            {username: {$regex: text,$options: 'i'}},
-            {firstname: {$regex: text,$options: 'i'}},
-            {lastname: {$regex: text,$options: 'i'}}
-        ]}, 'firstname lastname username email _id')
-        .limit(5)
-        .exec((err, users) => {
-            if (err) callback(err, null);
-            else if (users) {
-                callback(null, users);
-            } else(callback(null, []));
-        })
+User.queryUsers = (text) => {
+    return new Promise((res,rej)=>{
+        User.find(
+            {$or: [
+                {username: {$regex: text,$options: 'i'}},
+                {firstname: {$regex: text,$options: 'i'}},
+                {lastname: {$regex: text,$options: 'i'}}
+            ]}, 'firstname lastname username email _id')
+            .limit(5)
+            .exec((err, users) => {
+                if (err) rej(err,null);
+                else if (users) {
+                    res(users);
+                } else res([]);
+            })
+    })
 }
 
-User.createUser = (newUser, callback) => {
-    bcrypt.genSalt(10, (err, salt) => {
-        if (err) throw err;
-        bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-            newUser.save((err, user) => {
-                callback(err, user);
+User.createUser = (newUser) => {
+    return new Promise((res,rej)=>{
+        bcrypt.genSalt(10, (err, salt) => {
+            if (err) rej(err);
+            else bcrypt.hash(newUser.password, salt, (err, hash) => {
+                if (err) rej(err);
+                else {
+                    newUser.password = hash;
+                    newUser.save((err,user)=>{
+                        if (err) rej(err);
+                        else res(user);
+                    });
+                }
             });
         });
-    });
+    })
 }
 User.addTeam = (userId, teamId, callback) => {
     query = {
