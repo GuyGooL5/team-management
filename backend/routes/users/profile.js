@@ -3,8 +3,8 @@ const passport = require('passport');
 
 //Profile has GET method
 module.exports = (req, res) => {
-    User.findById(req.user._id,'username email firstname lastname _id',(err, user) => {
-        if (err) res.status(401).send('Unautherized').cookie('token', null);
-        else res.status(200).send({user:user})
-    })
+    if (req.user._id) User.getUserDetails(req.user._id)
+        .then(user => res.send(user))
+        .catch(err => res.status(400).send(err).cookie('token', null));
+    else res.status(401).send({ error: "Unauthorized" }).cookie('token', null);
 };

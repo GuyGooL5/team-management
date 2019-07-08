@@ -4,35 +4,24 @@ const User = require('../../models/user');
 //Register is post method
 module.exports = (req, res) => {
     //variable that stores form information
-    let bodyObj = {}
+    const { firstName, lastName, username, email, password } = req.body;
+    const reqBody = {
+        firstName: firstName,
+        lastName: lastName,
+        username: username,
+        email: email,
+        password: password
+    }
     //tests each form field validity and returns errors if there are any
-    if (req.body.firstName) bodyObj.firstname = req.body.firstName;
-    if (req.body.lastName) bodyObj.lastname = req.body.lastName;
-    if (req.body.username) bodyObj.username = req.body.username;
-    else res.status(400).send({
-        error: "Inavild User Name"
-    });
-    if (req.body.email) bodyObj.email = req.body.email;
-    else res.status(400).send({
-        error: "Email field is invalid"
-    })
-    if (req.body.password) bodyObj.password = req.body.password;
-    else res.status(400).send({
-        error: "Invalid Password"
-    });
-    if (bodyObj.username && bodyObj.email && bodyObj.password) {
-
+    if (!username) res.status(400).send({ error: "Invalid or empty Username" });
+    if (!email) res.status(400).send({ error: "Invalid or empty Email" })
+    if (!password) res.status(400).send({ error: "Invalid or empty Password" });
+    if (username && email && password) {
         //create new user model in database
-        let newUser = new User(bodyObj);
+        const newUser = User.newUserModel(reqBody);
 
         //use custom method from user model class to create a user and return a success message
-        User.createUser(newUser).then(user => {
-            if (user) res.send({
-                success: true,
-                msg: 'User Registered'
-            });
-        }).catch(err => {
-            res.status(400).send({success:false,Error:"Can't register user"});
-        })
+        User.createUser(newUser).then(success => res.send(success))
+            .catch(err => res.status(400).send(err));
     }
 }

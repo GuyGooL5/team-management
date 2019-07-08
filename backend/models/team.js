@@ -3,254 +3,111 @@ const {
     model,
     Types
 } = require('mongoose');
+const UserModel = require('./_userModel');
 const User = require('./user');
 
-//Team Schema
-const MemberSchema = Schema({
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: "User"
-    },
-    since: Schema.Types.Date,
-    permission: String
-})
-const TeamSchema = Schema({
-    name: {
-        type: String,
-        require: true
-    },
-    description: String,
-    owner: {
-        type: Schema.Types.ObjectId,
-        require: true,
-        ref: "User"
-    },
-    members: [MemberSchema]
-});
+const TeamModel = require('./_teamModel');
 
 
+const Team = {
+    //Creates a new team model.
+    newTeamModel: (newModel) => new TeamModel(newModel),
 
-const Team = model('Team', TeamSchema);
-
-//Get a list of all the members of a team.
-Team.getTeamDetails = (teamId, callback) => {
-    Team.findById(teamId, '_id owner name description members.user members.since members.permission')
-        .populate('owner', '_id firstname lastname username email')
-        .populate('members.user', '_id firstname lastname username email')
-        .exec((err, team) => {
-            if (err) {
-                if (err.kind == "ObjectId") callback({
-                    error: "Invalid team id."
-                }, false);
-                else callback(err, false);
-            } else if (team) {
-                callback(null, team);
-            } else callback({
-                error: "Cant find team"
-            }, false);
+    //Creates a new team, given a team Model object
+    createTeam: (newTeamModel) => new Promise((resolve, reject) => {
+        newTeamModel.save((err, team) => {
+            if (err) reject(err);
+            if(!team) reject({error:"Team not created"});
+            resolve(team);
+        });
+    }),
+    getTeamById: (team_id) => new Promise((resolve, reject) => {
+        TeamModel.findById(team_id).then(team => {
+            if (!team) reject({ error: "Team not found" });
+            resolve(team);
+        }).catch(err => reject(err));
+    }),
+    //Gets two parameters, team_id and user_id to compare if the user is the owner of the team.
+    deleteTeam: (team_id, owner_id) => new Promise((resolve, reject) => {
+        TeamModel.findById(team_id, '_id owner', (err, team) => {
+            if (err) reject(err);
+            else if (team) {
+                if (String(owner_id) === String(team.owner)) {
+                    team.remove((err, team) => {
+                        if (err) reject(err)
+                        else if (team) resolve({ success: true, msg: "team deleted succesfully" });
+                        else reject({ error: "Error occoured while deleting team" })
+                    })
+                } else reject({ error: "Only the owner can remove the team." });
+            } else reject({ error: "Team not found." });
         })
-}
+    }),
+    addMemberToTeam: (team_id, issuer_id, member_id) => new Promise((resolve, reject) => {
+        if (issuer_id === member_id) reject({ error: "You cannot add yourself" });
+        TeamModel.findOne({ _id: team_id, "members.user": issuer_id }, '_id members.user members.permission', (err, team) => {
+            if (err) reject(err);
+            if (!team) reject({ error: "You are not in this team" });
+            //find the issuer in the team
+            const { permission } = team.members.find(member => String(member.user) === String(issuer_id));
+            const isNewMember = !team.members.find(member => String(member.user) === String(member_id));
+            if (!isNewMember) reject({ error: "This user is already a member" });
+            if (permission !== "owner" && permission !== "manager") reject({ error: "You have no permission to add members." });
 
+            //finding the member
+            User.addUserToTeam(member_id, team_id).then(success => {
+                TeamModel.findByIdAndUpdate(team_id, { $addToSet: { members: { user: member_id, since: new Date, permission: 'member' } } }).then(team => {
+                    if (!team) reject({ error: "Team not found" });
+                    resolve(success);
+                }).catch(err => reject(err));
+            }).catch(err => reject(err));
+        })
+    }),
 
-Team.createTeam = (newTeam, callback) => {
-    newTeam.save((err, team) => {
-        callback(err, team);
-    });
-}
+    removeMemberFromTeam: (team_id, issuer_id, member_id) => new Promise((resolve, reject) => {
+        if (issuer_id === member_id) reject({ error: "You cannot Remove yourself" });
+        TeamModel.findOne({ _id: team_id, "members.user": issuer_id }, '_id members.user members.permission', (err, team) => {
+            if (err) reject(err);
+            if (!team) reject({ error: "You are not in this team" });
+            //find the issuer in the team
+            const { permission } = team.members.find(member => String(member.user) === String(issuer_id));
+            const isNewMember = !team.members.find(member => String(member.user) === String(member_id));
+            if (isNewMember) reject({ error: "This user is not a member in this team." });
+            if (permission !== "owner" && permission !== "manager") reject({ error: "You have no permission to remove members." });
+            User.removeMemberFromTeam(member_id, team_id).then(success => {
+                TeamModel.findByIdAndUpdate(team_id, { $pull: { members: { user: member_id } } }).then((team) => {
+                    if (!team) reject({ error: "Team not found" });
+                    resolve(success);
+                }).catch(err => reject(err));
+            }).catch(err => reject(err));
+        })
+    }),
+    updateMemberPermissions: (team_id, issuer_id, member_id, newPermission) => new Promise((resolve, reject) => {
+        if (issuer_id == member_id) reject({ error: "You cannot change your own permissions" });
+        TeamModel.findById(team_id, '_id members.user members.permission', (err, team) => {
+            if (err) reject(err);
+            if (!team) reject({ error: "Team not found" });
+            const { permission } = team.members.find(member => String(member.user) === String(issuer_id));
+            const targetMember = team.members.find(member => String(member.user) === String(member_id));
+            if (member_id === team.owner) reject({ error: "You can't change owner's permissions" });
+            if (!targetMember) reject({ error: "This user is not a member in this team." });
+            if (permission !== "owner" && permission !== "manager") reject({ error: "You have no permission to change permissions." });
+            if (targetMember.permission === newPermission) reject({ error: "This member's permission is already: " + newPermission });
+            TeamModel.findByIdAndUpdate(team_id, { "$set": { "members.$[i].permission": newPermission } }, { arrayFilters: [{ "i.user": member_id }] }).then(team => {
+                if (!team) reject({ error: "Team not found" });
+                resolve({ success: true, msg: "Updated Member's permissiom" });
+            }).catch(err => reject(err));
+        })
+    }),
 
-Team.deleteTeam = (teamId, userId, callback) => {
-    Team.findById(teamId, '_id owner', (err, team) => {
-        if (err) callback(err);
-        else if (team) {
-            if (String(userId) == String(team.owner)) {
-                team.remove((err, team) => {
-                    if (err) callback(err)
-                    if (team) {
-                        User.removeTeam(team.owner, team._id, (err, user) => {
-                            callback(null, true);
-                        })
-                    } else callback({
-                        error: "Error occoured while deleting team"
-                    })
-                })
-            } else callback({
-                error: "Only the owner can remove the team."
-            })
-        } else callback({
-            error: "Team not found."
-        }, false);
+    //Get a list of all the members of a team.
+    getTeamDetails: (team_id) => new Promise((reject, resolve) => {
+        TeamModel.findById(team_id, '_id owner name description members.user members.since members.permission')
+            .populate('owner', '_id firstname lastname username email')
+            .populate('members.user', '_id firstname lastname username email')
+            .then(team => {
+                if(!team) reject({error:"Team not found"});
+                resolve(team);
+            }).catch(err=>reject(err));
     })
 }
-Team.addMember = (teamId, issuerId, memberId, callback) => {
-    if (issuerId == memberId) callback({
-        error: "You cannot add yourself"
-    }, null);
-    else Team.findById(teamId, '_id members.user members.permission', (err, team) => {
-        if (err) callback(err, null);
-        else if (team) {
-            let issuer = team.members.find(obj => {
-                return String(obj.user) == String(issuerId);
-            })
-            if (issuer.permission == "manager" || issuer.permission == "owner") {
-                //find if member exists
-                User.findById(memberId, (err, user) => {
-                    if (err) callback(err, null);
-                    //logic if member exists
-                    else if (user) {
-                        //test to see if the user isn't already in that team
-                        if (user.teams.includes(team._id)) callback({
-                            error: "This member is already in this team"
-                        });
-                        else {
-                            user.teams.push(team._id);
-                            user.save((err, user) => {
-                                if (err) callback(err, null);
-                                else if (user) {
-                                    //test if team has been added to user
-                                    if (user.teams.includes(team._id)) {
-                                        team.members.push({
-                                            user: user._id,
-                                            since: new Date(),
-                                            permission: 'member'
-                                        });
-                                        team.save((err, team) => {
-                                            if (err) callback(err, null);
-                                            else if (team) {
-                                                callback(null, true)
-                                            }
-                                        })
-                                    }
-
-                                } else callback({
-                                    error: "Internal Error"
-                                }, null);
-                            })
-                        }
-                    }
-                    //return if member doesn't exist on the database
-                    else callback({
-                        error: "Target member not found"
-                    }, false);
-                })
-
-            } else callback({
-                error: "You have no permission to add members"
-            }, false);
-        } else callback({
-            error: "Team not found"
-        });
-    })
-}
-
-Team.permitMember = (teamId, issuerId, memberId, permission, callback) => {
-    if (issuerId == memberId) callback({
-        error: "You cannot promote yourself"
-    }, null);
-    else Team.findById(teamId, '_id members.user members.permission', (err, team) => {
-        if (err) callback(err, null);
-        else if (team) {
-            let issuer = team.members.find(obj => {
-                return String(obj.user) == String(issuerId);
-            })
-            if (issuer.permission == "manager" || issuer.permission == "owner") {
-                //find if member exists
-                User.findById(memberId, (err, user) => {
-                    if (err) callback(err, null);
-                    //logic if member exists
-                    else if (user) {
-                        //test to see if the user is in that team
-                        if (user.teams.includes(team._id)) {
-                            team.members.forEach(obj => {
-                                if (String(obj.user) == String(user._id)) {
-                                    obj.permission = permission;
-                                }
-                            })
-                            team.save((err, team) => {
-                                if (err) callback(err)
-                                else if (team) {
-                                    callback(null, true);
-                                }
-                            })
-                        } else callback({
-                            error: "This member is not in this team"
-                        });
-
-                    }
-                    //return if member doesn't exist on the database
-                    else callback({
-                        error: "Target member not found"
-                    }, false);
-                })
-
-            } else callback({
-                error: "You have no permission to promote users"
-            }, false);
-        } else callback({
-            error: "Team not found"
-        });
-    })
-}
-Team.removeMember = (teamId, issuerId, memberId, callback) => {
-    if (issuerId == memberId) callback({
-        error: "You cannot remove yourself"
-    }, null);
-    else Team.findById(teamId, '_id members.user members.permission', (err, team) => {
-        if (err) callback(err, null);
-        else if (team) {
-            let issuer = team.members.find(obj => {
-                return String(obj.user) == String(issuerId);
-            })
-            if (issuer) {
-
-                if (issuer.permission == "manager" || issuer.permission == "owner") {
-                    //find if member exists
-                    User.findById(memberId, (err, user) => {
-                        if (err) callback(err, null);
-                        //logic if member exists
-                        else if (user) {
-                            //test to see if the user is already in that team
-                            if (user.teams.includes(team._id)) {
-                                //remove the team reference from the user
-                                user.teams = user.teams.filter(el => {
-                                    return String(el) !== String(team._id);
-                                })
-                                user.save((err, user) => {
-                                    if (err) callback(err, null);
-                                    else if (user) {
-                                        //test to see if the team is really not present
-                                        if (!user.teams.includes(team._id)) {
-                                            team.members = team.members.filter(obj => {
-                                                return String(obj.user) == String(issuerId);
-                                            })
-                                            team.save((err, team) => {
-                                                if (err) callback(err, null)
-                                                else if (team) callback(null, true);
-                                            })
-                                        }
-                                    } else callback({
-                                        error: "Internal Error"
-                                    });
-                                })
-                            } else callback({
-                                error: "This member is not in this team"
-                            });
-                        }
-                        //return if member doesn't exist on the database
-                        else callback({
-                            error: "Target member not found"
-                        }, false);
-                    })
-
-                } else callback({
-                    error: "You have no permission to remove members"
-                }, false);
-            } else callback({
-                error: "You are not a member in this team"
-            });
-        } else callback({
-            error: "Team not found"
-        });
-    })
-}
-
 module.exports = Team;

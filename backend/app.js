@@ -5,7 +5,6 @@ const methodOverride = require('method-override');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const passport = require('passport');
-const morgan = require('morgan');
 const mongoose = require('mongoose');
 //dotenv init
 require('dotenv').config();
@@ -16,15 +15,6 @@ const config = require('./config/database');
 
 //----------------------------------------------------------
 
-//sessions setup
-let sess = {
-    secret: process.env.SEESION_SECRET,
-    cookie: {
-        secure: true
-    },
-    resave: false,
-    saveUninitialized: true,
-}
 //App setup
 
 //Express setup
@@ -36,8 +26,6 @@ const app = express();
 //When going in production it will become no-cors
 app.use(cors());
 
-//Morgan logs any request to console
-//app.use(morgan('tiny'));
 //Body parser to json
 //Verifies that all incoming json files are as expceted and if not an error is sent back
 app.use(bodyParser.json({verify:(req,res,buf,next)=>{

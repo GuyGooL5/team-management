@@ -18,13 +18,13 @@ router.use('/find',passport.authenticate('jwt',{session:false}),require('./teams
 
 
 
-//delete later
-const User=require('../models/user');
-router.get('/exitallteams/:id',(req,res)=>{
-    User.findByIdAndUpdate(req.params.id,{teams:[]},(err,user)=>{
-        res.send('good');
-    });
-})
+// //delete later
+// const User=require('../models/user');
+// router.get('/exitallteams/:id',(req,res)=>{
+//     User.findByIdAndUpdate(req.params.id,{teams:[]},(err,user)=>{
+//         res.send('good');
+//     });
+// })
 
 
 
