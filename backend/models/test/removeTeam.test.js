@@ -5,25 +5,29 @@ const { expect } = require('chai')
 const User = require('../user');
 const Team = require('../team');
 
-const clearDB = require('./test_init');
+const { initConnection, clearTeams, clearUsers, closeConnection } = require('./test_init');
 
 describe('Remove team', function () {
 
     this.timeout(10000);
     before(async () => {
-        await clearDB('tests', null, true)
-        await clearDB('users', null, true)
+        await initConnection();
+        await clearTeams();
+        await clearUsers();
+    });
+    after(async () => {
+        await clearTeams();
+        await clearUsers();
+        closeConnection();
     });
 
-    let user1_id = null;
-    let user2_id = null;
-    let [team1_id, team2_id, team3_id] = [null, null, null];
+    var [user1_id, user2_id] = [null, null];
+    var [team1_id, team2_id, team3_id] = [null, null, null];
 
     /**Create a user that is required to the next tests.
      * Expected result: no error.
      */
     it('Create a user to later use', async () => {
-        let error = null;
         const user1 = {
             username: 'Username1',
             password: 'A password',
@@ -34,9 +38,10 @@ describe('Remove team', function () {
             password: 'A password',
             email: 'email2@example.com'
         }
-
-        user1_id = (await User.createUser(User.newUserModel(user1)))._id;
-        user2_id = (await User.createUser(User.newUserModel(user2)))._id;
+        user1_id = (await User.createUser(User.newUserModel(user1))).user._id
+        user2_id = (await User.createUser(User.newUserModel(user2))).user._id
+        expect(user1_id).to.not.be.null
+        expect(user2_id).to.not.be.null
     })
 
     /**Create three teams that are required to the next tests.
@@ -50,7 +55,7 @@ describe('Remove team', function () {
         team1_id = (await Team.createTeam(Team.newTeamModel(teams[0])))._id;
         team2_id = (await Team.createTeam(Team.newTeamModel(teams[1])))._id;
         team3_id = (await Team.createTeam(Team.newTeamModel(teams[2])))._id;
-        await Team.addMemberToTeam(team3_id, user1_id, user2_id).catch(err => console.log('Error', err));
+        await Team.addMemberToTeam(team3_id, user1_id, user2_id)
     })
 
     /**Test to see if a deleted team returns a success: true
@@ -82,7 +87,7 @@ describe('Remove team', function () {
     /**Test to see that all the team's members have it's reference;
      * Expected result: The team reference found in both members.
      */
-    it('A reference exists on all team users',async()=>{
+    it('A reference exists on all team users', async () => {
         expect((await User.getUserById(user1_id)).teams.includes(team3_id)).to.be.true
         expect((await User.getUserById(user2_id)).teams.includes(team3_id)).to.be.true
     })

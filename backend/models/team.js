@@ -43,23 +43,25 @@ const Team = {
         })
     }),
     addMemberToTeam: (team_id, issuer_id, member_id) => new Promise((resolve, reject) => {
-        if (issuer_id === member_id) reject({ error: "You cannot add yourself" });
-        TeamModel.findOne({ _id: team_id, "members.user": issuer_id }, '_id members.user members.permission', (err, team) => {
+        if (issuer_id === member_id) reject({ error: "You cannot add yourself." });
+        else TeamModel.findOne({ _id: team_id, "members.user": issuer_id }, '_id members.user members.permission', (err, team) => {
             if (err) reject(err);
-            if (!team) reject({ error: "You are not in this team" });
-            //find the issuer in the team
-            const { permission } = team.members.find(member => String(member.user) === String(issuer_id));
-            const isNewMember = !team.members.find(member => String(member.user) === String(member_id));
-            if (!isNewMember) reject({ error: "This user is already a member" });
-            if (permission !== "owner" && permission !== "manager") reject({ error: "You have no permission to add members." });
-
-            //finding the member
-            User.addUserToTeam(member_id, team_id).then(success => {
-                TeamModel.findByIdAndUpdate(team_id, { $addToSet: { members: { user: member_id, since: new Date, permission: 'member' } } }).then(team => {
-                    if (!team) reject({ error: "Team not found" });
-                    resolve(success);
+            if (!team) reject({ error: "You are not in this team." });
+            else{
+                //find the issuer in the team
+                const { permission } = team.members.find(member => String(member.user) === String(issuer_id));
+                const isNewMember = !team.members.find(member => String(member.user) === String(member_id));
+                if (!isNewMember) reject({ error: "This user is already a member." });
+                else if (permission !== "owner" && permission !== "manager") reject({ error: "You have no permission to add members." });
+                
+                //finding the member
+                else User.addUserToTeam(member_id, team_id).then(success => {
+                    TeamModel.findByIdAndUpdate(team_id, { $addToSet: { members: { user: member_id, since: new Date, permission: 'member' } } }).then(team => {
+                        if (!team) reject({ error: "Team not found." });
+                        else resolve(success);
+                    }).catch(err => reject(err));
                 }).catch(err => reject(err));
-            }).catch(err => reject(err));
+            }
         })
     }),
 

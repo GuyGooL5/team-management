@@ -1,7 +1,5 @@
 const { Schema, model } = require('mongoose');
 
-const User = require('./user');
-
 const TeamSchema = Schema({
     name: {
         type: Schema.Types.String,

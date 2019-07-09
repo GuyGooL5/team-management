@@ -1,18 +1,24 @@
 /**Unit tests for user creation on database.
  */
-const {expect} = require('chai')
+const { expect } = require('chai')
 
 const User = require('../user');
 
-const clearDB=require('./test_init');
+const { initConnection, clearUsers, closeConnection } = require('./test_init');
 
 describe('Creating new user', function () {
     this.timeout(10000);
-    afterEach(function (done) {
-        this.timeout(10000);
-        clearDB('users',done);
+    before(async () => {
+        await initConnection();
+        clearUsers();
     })
-
+    afterEach(async () => {
+        await clearUsers();
+    })
+    after(async () => {
+        await clearUsers();
+        closeConnection();
+    })
 
     /**Test that all fields let the database create a new user.
      * Expected result is a user object that contains said fields
@@ -28,7 +34,7 @@ describe('Creating new user', function () {
             email: 'email@example.com'
         })
         let response = await User.createUser(newUser);
-        expect(response.username).to.eql('Username');
+        expect(response.user.username).to.eql('Username');
     })
 
     /**Test that only required fields are enough to create a new user.
@@ -41,7 +47,7 @@ describe('Creating new user', function () {
             email: 'email@example.com'
         })
         let response = await User.createUser(newUser);
-        expect(response.username).to.eql('Username');
+        expect(response.user.username).to.eql('Username');
     })
 
     /**Test that the password generated when creating new user
@@ -53,21 +59,21 @@ describe('Creating new user', function () {
             password: 'A password',
             email: 'email@example.com'
         })
-        let user = await User.createUser(newUser);
-        expect(user.password).to.match(/^\$2a\$10\$.{53}$/);
+        let response = await User.createUser(newUser);
+        expect(response.user.password).to.match(/^\$2a\$10\$.{53}$/);
     })
 
     /**Test to see if error is returning, and user is not created when
      * a required field is missing.
      * This one tests the request without <username>
      */
-    it('Returns error when registring non-existent required field(username)',async()=>{
+    it('Returns error when registring non-existent required field(username)', async () => {
         const newUser = User.newUserModel({
             //no username
-            password:'A password',
-            email:"email@example.com"
+            password: 'A password',
+            email: "email@example.com"
         });
-        await User.createUser(newUser).catch(err=>{
+        await User.createUser(newUser).catch(err => {
             expect(err).to.not.be.null;
         })
     })
@@ -76,13 +82,13 @@ describe('Creating new user', function () {
      * a required field is missing.
      * This one tests the request without <password>
      */
-    it('Returns error when registring non-existent required field(password)',async()=>{
+    it('Returns error when registring non-existent required field(password)', async () => {
         const newUser = User.newUserModel({
-            username:'Username',
+            username: 'Username',
             //no password
-            email:"email@example.com"
+            email: "email@example.com"
         });
-        await User.createUser(newUser).catch(err=>{
+        await User.createUser(newUser).catch(err => {
             expect(err).to.not.be.null;
         })
     })
@@ -91,13 +97,13 @@ describe('Creating new user', function () {
      * a required field is missing.
      * This one tests the request without <email>
      */
-    it('Returns error when registring non-existent required field(email)',async()=>{
+    it('Returns error when registring non-existent required field(email)', async () => {
         const newUser = User.newUserModel({
-            username:'Username',
-            password:"A password"
+            username: 'Username',
+            password: "A password"
             //no password
         });
-        await User.createUser(newUser).catch(err=>{
+        await User.createUser(newUser).catch(err => {
             expect(err).to.not.be.null;
         })
     })

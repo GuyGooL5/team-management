@@ -5,34 +5,37 @@ const { expect } = require('chai')
 const User = require('../user');
 const Team = require('../team');
 
-const clearDB = require('./test_init');
+const { initConnection, clearTeams, clearUsers, closeConnection } = require('./test_init');
 
 describe('Creating new team', function () {
     this.timeout(10000);
-    before(async()=>{
-        clearDB('users');
-        clearDB('teams');
+    before(async () => {
+        await initConnection();
+        await clearUsers();
+        await clearTeams();
     })
-    afterEach(function (done) {
-        this.timeout(10000);
-        clearDB('teams', done);
+    afterEach(async () => {
+        await clearTeams();
     })
-
+    after(async () => {
+        await clearUsers();
+        await clearTeams();
+        closeConnection();
+    })
     var user_id = null;
 
     /**Create a user to have the teams.
      * Expected result: no error.
      */
     it('Create a user to later use', async () => {
-        let error = null;
         let user = User.newUserModel({
             username: 'Username1',
             password: 'A password',
             email: 'email1@example.com'
         });
-        user = await User.createUser(user);
+        response = await User.createUser(user);
         user_id = user._id;
-        expect(user.username).to.eq('Username1');
+        expect(response.user.username).to.eq('Username1');
     })
 
     /**Test to see if a team is created with all fields
@@ -79,10 +82,10 @@ describe('Creating new team', function () {
         let team = Team.newTeamModel({
             owner: user_id
         });
-        try{
+        try {
             await Team.createTeam(team);
         }
-        catch(err){
+        catch (err) {
             expect(err).to.not.be.null;
         }
     })
@@ -95,11 +98,11 @@ describe('Creating new team', function () {
             name: 'Team name'
         });
 
-        try{
+        try {
             await Team.createTeam(team);
             expect(true).to.be.false // No escape from rejection
         }
-        catch(err){
+        catch (err) {
             expect(err.error).to.eq("No team owner");
         }
     })
@@ -112,10 +115,10 @@ describe('Creating new team', function () {
             name: 'Team name',
             owner: 'invalid#!!@$!@'
         });
-        try{
+        try {
             await Team.createTeam(team);
         }
-        catch(err){
+        catch (err) {
             expect(err.name).to.eq('ValidationError');
         }
     })
@@ -129,10 +132,10 @@ describe('Creating new team', function () {
             name: 'Team name',
             owner: '000000000000000000000000'
         });
-        try{
+        try {
             await Team.createTeam(team);
         }
-        catch(err){
+        catch (err) {
             expect(err.error).to.eq('Wrong owner id');
         }
     });

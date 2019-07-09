@@ -59,12 +59,12 @@ passport.deserializeUser(function (user, done) {
 
 //MongoDB
 //Connection Credentials
-mongoose.connect(config.database_url_prod, {
+mongoose.connect(config.database_url_test, {
     useNewUrlParser: true
 })
 //Events
 mongoose.connection.on('connected', () => {
-    console.log('Connected to Database:', config.database_url_prod);
+    console.log('Connected to Database:', config.database_url_test);
 })
 mongoose.connection.on('error', (err) => {
     console.log('Database Error:', err);

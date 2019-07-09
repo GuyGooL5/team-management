@@ -14,14 +14,14 @@ module.exports = (req, res) => {
     }
     //tests each form field validity and returns errors if there are any
     if (!username) res.status(400).send({ error: "Invalid or empty Username" });
-    if (!email) res.status(400).send({ error: "Invalid or empty Email" })
-    if (!password) res.status(400).send({ error: "Invalid or empty Password" });
+    else if (!email) res.status(400).send({ error: "Invalid or empty Email" })
+    else if (!password) res.status(400).send({ error: "Invalid or empty Password" });
     if (username && email && password) {
         //create new user model in database
         const newUser = User.newUserModel(reqBody);
 
         //use custom method from user model class to create a user and return a success message
-        User.createUser(newUser).then(success => res.send(success))
-            .catch(err => res.status(400).send(err));
+        User.createUser(newUser).then(success => res.json(success))
+            .catch(err => res.status(400).json(err));
     }
 }

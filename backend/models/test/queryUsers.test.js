@@ -1,18 +1,22 @@
 /**Unit tests for querying all users with matching strings on database.
  */
-const {expect} = require('chai')
+const { expect } = require('chai')
 
 const User = require('../user');
 
-const clearDB=require('./test_init');
+const { initConnection, clearUsers, closeConnection } = require('./test_init');
 
 describe('Finding user search queries', function () {
     this.timeout(10000);
-    
-    before(async ()=>{
-        await clearDB('users',null,true);
-    });
 
+    before(async () => {
+        await initConnection();
+        await clearUsers();
+    });
+    after(async () => {
+        await clearUsers();
+        closeConnection()
+    })
 
     /**Inital test to push three new entries to database
      * to test on later.
@@ -33,9 +37,9 @@ describe('Finding user search queries', function () {
             password: 'A password',
             email: 'email3@example.com'
         }];
-        await User.createUser(User.newUserModel(user1)).catch(err=>{error=err});
-        await User.createUser(User.newUserModel(user2)).catch(err=>{error=err});
-        await User.createUser(User.newUserModel(user3)).catch(err=>{error=err});
+        await User.createUser(User.newUserModel(user1)).catch(err => { error = err });
+        await User.createUser(User.newUserModel(user2)).catch(err => { error = err });
+        await User.createUser(User.newUserModel(user3)).catch(err => { error = err });
         expect(error).to.be.null;
 
     })

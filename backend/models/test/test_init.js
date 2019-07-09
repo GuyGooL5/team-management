@@ -1,36 +1,25 @@
 const mongoose = require('mongoose');
-
+const UserModel = require('../_userModel')
+const TeamModel = require('../_teamModel')
 const config = require('../../config/database');
 
-function clearDB(collection,done,isLogged) {
-    return mongoose.connection.dropCollection(collection, () => {
-        if(isLogged) console.log('Cleared '+collection+' DB.');
-        if(done) done();
-    });
-}
+module.exports = {
 
-
-before(function (done) {
-    this.timeout(10000);
-    mongoose.connect(config.database_url_test);
-
-    mongoose.connection.once('open',async (err) => {
-        if (err) throw (err);
-        else {
+    clearUsers: () => UserModel.remove({}),
+    clearTeams: () => TeamModel.remove({}),
+    initConnection: () => new Promise((resolve, reject) => {
+        mongoose.connect(config.database_url_test, err => reject(err));
+        mongoose.connection.once('open', err => {
+            if (err) reject(err);
             console.log('Connected to DB');
-            await clearDB('users');
-            clearDB('teams',done);
-        }
+            resolve();
+        })
+    }),
+    closeConnection: () => new Promise((resolve, reject) => {
+        mongoose.disconnect(err => {
+            if (err) reject(err);
+            console.log('Disconnected from DB');
+            resolve()
+        })
     })
-})
-
-after(async function () {
-    this.timeout(10000);
-    await clearDB('users');
-    await clearDB('teams');
-    mongoose.disconnect(() => {
-        console.log('Successfuly disconnected.');
-    });
-})
-
-module.exports=clearDB;
+}

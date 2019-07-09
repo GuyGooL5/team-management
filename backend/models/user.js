@@ -13,7 +13,7 @@ const User = {
                     newUserModel.password = hash;
                     newUserModel.save(err => {
                         if (err) reject(err);
-                        resolve({ success: true, msg: "User Registered" })
+                        resolve({ success: true, msg: "User Registered",user:newUserModel })
                     });
                 });
             });
@@ -38,7 +38,7 @@ const User = {
         }).catch(err => reject(err));
     }),
     getUserDetails: (user_id) => new Promise((resolve, reject) => {
-        User.findById(user_id, 'username email firstname lastname _id').then(user => {
+        UserModel.findById(user_id, 'username email firstname lastname _id').then(user => {
             if (!user) reject({ error: "No user is found" });
             resolve(user);
         }).catch(err => reject(err))
